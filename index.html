@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoboRoute</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <h1>RoboRoute</h1>
+    <div id="mainContent">
+      <div id="sidePanel">
+        <div id="controls">
+          <h3>Write Code</h3>
+          <textarea id="codeInput" placeholder="Enter commands (e.g., move 100)"></textarea>
+          <div>
+            <label for="speedInput">Speed (pixels/sec): </label>
+            <input id="speedInput" type="number" min="10" max="500" value="100">
+          </div>
+          <button id="runButton">Run Code</button>
+          <button id="routeButton">Show Route</button>
+        </div>
+
+        <div id="resetConfig">
+          <h3>Set Reset Position</h3>
+          <label for="resetXInput">X: </label>
+          <input id="resetXInput" type="number" value="300">
+          <label for="resetYInput">Y: </label>
+          <input id="resetYInput" type="number" value="300">
+          <label for="resetAngleInput">Angle: </label>
+          <input id="resetAngleInput" type="number" value="0">
+          <button id="setResetButton">Set Reset Position</button>
+        </div>
+
+        <div id="robotSizeConfig">
+          <h3>Set Robot Size</h3>
+          <label for="robotWidthInput">Width: </label>
+          <input id="robotWidthInput" type="number" value="40">
+          <label for="robotHeightInput">Height: </label>
+          <input id="robotHeightInput" type="number" value="40">
+          <button id="setRobotSizeButton">Set Robot Size</button>
+        </div>
+
+        <div id="info">
+          <span id="timerDisplay">Time: 0.0s</span>
+          <span id="scoreDisplay">Score: 0</span>
+        </div>
+      </div>
+
+      <canvas id="field" width="600" height="600"></canvas>
+    </div>
+
+    <button id="faqButton" class="floating-btn">?</button>
+    <div id="faqPopup" class="popup">
+      <h2>Command FAQ</h2>
+      <ul>
+        <li><strong>move [distance]</strong> - Move forward by [distance] pixels.</li>
+        <li><strong>back [distance]</strong> - Move backward by [distance] pixels.</li>
+        <li><strong>turn [degrees]</strong> - Turn by [degrees].</li>
+        <li><strong>score</strong> - Add points to the score.</li>
+      </ul>
+      <button id="closeFaqButton">Close</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
