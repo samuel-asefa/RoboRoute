@@ -15,9 +15,20 @@ const robotWidthInput = document.getElementById("robotWidthInput");
 const robotHeightInput = document.getElementById("robotHeightInput");
 const timerDisplay = document.getElementById("timerDisplay");
 const scoreDisplay = document.getElementById("scoreDisplay");
+//Popup Consts
 const faqButton = document.getElementById("faqButton");
 const faqPopup = document.getElementById("faqPopup");
 const closeFaqButton = document.getElementById("closeFaqButton");
+const speedButton = document.getElementById("robotSpeedButton");
+const speedPopup = document.getElementById("speedPopup");
+const closeSpeedButton = document.getElementById("closeSpeedButton");
+const robotSizeButton = document.getElementById("robotSizeButton");
+const sizePopup = document.getElementById("sizePopup");
+const closeSizeButton = document.getElementById("closeSizeButton");
+const initialPositionButton = document.getElementById("initialPositionButton");
+const initialPositionPopup = document.getElementById("initialPositionPopup");
+const closeInitialPositionButton = document.getElementById("closeInitialPositionButton");
+
 
 // Variables for robot state
 let robot = {
@@ -126,6 +137,7 @@ function executeCommand(command) {
 
 // Execute code input
 async function executeCode() {
+  resetRobot(); // Resets Robot to Initial Position Before Executing Code
   const commands = codeInput.value.split("\n").map((cmd) => cmd.trim());
   animationRunning = true;
   timer = 0.1; // Reset timer
@@ -188,6 +200,32 @@ runButton.addEventListener("click", () => executeCode());
 routeButton.addEventListener("click", () => {
   alert("Route visualization not implemented yet.");
 });
+
+//Robot Speed Popup
+speedButton.addEventListener("click", () => {
+  speedPopup.style.display = "block";
+});
+closeSpeedButton.addEventListener("click", () => {
+  speedPopup.style.display = "none";
+});
+
+//Robot Size Popup
+robotSizeButton.addEventListener("click", () => {
+  sizePopup.style.display = "block";
+});
+closeSizeButton.addEventListener("click", () => {
+  sizePopup.style.display = "none";
+});
+
+//Initial Position Popup
+initialPositionButton.addEventListener("click", () => {
+  initialPositionPopup.style.display = "block";
+});
+closeInitialPositionButton.addEventListener("click", () => {
+  initialPositionPopup.style.display = "none";
+});
+
+//FAQ Popup
 faqButton.addEventListener("click", () => {
   faqPopup.style.display = "block";
 });

@@ -31,7 +31,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    max-width: 20%;
+    max-width: 30%;
   }
   
   #controls h1 {
@@ -51,6 +51,8 @@ body {
   
   button {
     padding: 8px 12px;
+    padding-left: 10%;
+    padding-right: 10%;
     font-size: 16px;
     cursor: pointer;
     background-color: #007bff;
@@ -85,7 +87,7 @@ body {
     display: flex;
   }
   
-  #faqPopup, #robotSizePopup {
+  #faqPopup, #sizePopup, #initialPositionPopup, #speedPopup {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -97,7 +99,7 @@ body {
     z-index: 1000;
   }
   
-  #faqPopup h2 {
+  #faqPopup h2, #sizePopup h2, #initialPositionPopup h2, #speedPopup h2 {
     margin-top: 0;
   }
   
@@ -110,12 +112,16 @@ body {
     margin: 8px 0;
   }
   
-  #faqPopup button, #robotSizePopup button {
+  #faqPopup div, #sizePopup div, #initialPositionPopup div, #speedPopup div {
+    margin-bottom: 12px;
+  }
+
+  #faqPopup button, #sizePopup button, #initialPositionPopup button, #speedPopup button {
     margin-top: 10px;
     background-color: #ff6666;
   }
   
-  #faqPopup button:hover, #robotSizePopup button:hover {
+  #faqPopup button:hover, #sizePopup button:hover, #initialPositionPopup button:hover, #speedPopup button:hover {
     background-color: #cc3333;
   }
   
