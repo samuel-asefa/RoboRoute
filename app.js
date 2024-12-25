@@ -5,6 +5,7 @@ const codeInput = document.getElementById("codeInput");
 const runButton = document.getElementById("runButton");
 const routeButton = document.getElementById("routeButton");
 const speedInput = document.getElementById("speedInput");
+const turnSpeedInput = document.getElementById("turnSpeedInput");
 const resetXInput = document.getElementById("resetXInput");
 const resetYInput = document.getElementById("resetYInput");
 const resetAngleInput = document.getElementById("resetAngleInput");
@@ -31,11 +32,12 @@ let robot = {
   score: 0,
 };
 
-let speed = 100; // Pixels Per Second
-let timer = 0.1; // Start timer at 0.1 seconds - Offsets Error
+let speed = 100; // Pixels per second
+let turnSpeed = 90; // Degrees per second
+let timer = 0.1; // Start timer at 0.1 seconds
 let animationRunning = false;
 
-// Load Field and Robot Image
+// Load field and robot images
 const fieldImage = new Image();
 fieldImage.src = "field.png";
 
@@ -64,12 +66,13 @@ function executeCommand(command) {
   return new Promise((resolve) => {
     let [action, value] = command.split(" ");
     value = parseFloat(value);
-    const duration = Math.abs(value / speed) * 1000; // Animation duration
+    let duration;
 
     if (action === "move" || action === "back") {
       const direction = action === "move" ? 1 : -1;
       const deltaX = Math.cos((robot.angle * Math.PI) / 180) * value * direction;
       const deltaY = Math.sin((robot.angle * Math.PI) / 180) * value * direction;
+      duration = Math.abs(value / speed) * 1000;
 
       let startX = robot.x;
       let startY = robot.y;
@@ -93,6 +96,8 @@ function executeCommand(command) {
     } else if (action === "turn") {
       const startAngle = robot.angle;
       const deltaAngle = value;
+      duration = Math.abs(value / turnSpeed) * 1000;
+
       const startTime = performance.now();
 
       function animateTurn(timestamp) {
@@ -167,6 +172,15 @@ setRobotSizeButton.addEventListener("click", () => {
   robot.width = parseFloat(robotWidthInput.value);
   robot.height = parseFloat(robotHeightInput.value);
   render();
+});
+
+// Update speed and turn speed
+speedInput.addEventListener("change", () => {
+  speed = parseFloat(speedInput.value);
+});
+
+turnSpeedInput.addEventListener("change", () => {
+  turnSpeed = parseFloat(turnSpeedInput.value);
 });
 
 // Add event listeners

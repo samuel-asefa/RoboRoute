@@ -5,64 +5,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RoboRoute</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image" href="favicon.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="app">
-    <h1>RoboRoute</h1>
-    <div id="mainContent">
-      <div id="sidePanel">
-        <div id="controls">
-          <h3>Write Code</h3>
-          <textarea id="codeInput" placeholder="Enter commands (e.g., move 100)"></textarea>
-          <div>
-            <label for="speedInput">Speed (pixels/sec): </label>
-            <input id="speedInput" type="number" min="10" max="500" value="100">
-          </div>
-          <button id="runButton">Run Code</button>
-          <button id="routeButton">Show Route</button>
-        </div>
-
-        <div id="resetConfig">
-          <h3>Set Reset Position</h3>
-          <label for="resetXInput">X: </label>
-          <input id="resetXInput" type="number" value="300">
-          <label for="resetYInput">Y: </label>
-          <input id="resetYInput" type="number" value="300">
-          <label for="resetAngleInput">Angle: </label>
-          <input id="resetAngleInput" type="number" value="0">
-          <button id="setResetButton">Set Reset Position</button>
-        </div>
-
-        <div id="robotSizeConfig">
-          <h3>Set Robot Size</h3>
-          <label for="robotWidthInput">Width: </label>
-          <input id="robotWidthInput" type="number" value="40">
-          <label for="robotHeightInput">Height: </label>
-          <input id="robotHeightInput" type="number" value="40">
-          <button id="setRobotSizeButton">Set Robot Size</button>
-        </div>
-
-        <div id="info">
-          <span id="timerDisplay">Time: 0.0s</span>
-          <span id="scoreDisplay">Score: 0</span>
-        </div>
+  <div id="container">
+    <div id="controls">
+      <header>
+        <h1 class="title">RoboRoute</h1>
+      </header>
+      <textarea id="codeInput" placeholder="Enter commands here! 
+      
+Check FAQ for a command library"></textarea>
+      <button id="runButton">Run Simulation</button>
+      <button id="routeButton">Show Route</button>
+      <h3>Set Robot Speed:</h3>
+      <div>
+        <label for="speedInput">Speed (px/s):</label>
+        <input type="number" id="speedInput" value="100">
       </div>
-
-      <canvas id="field" width="600" height="600"></canvas>
+      <div>
+        <label for="turnSpeedInput">Turn Speed (°/s):</label>
+        <input type="number" id="turnSpeedInput" value="90">
+      </div>
+      <h3>Set Reset Position:</h3>
+      <div>
+        <label for="resetXInput">X:</label>
+        <input type="number" id="resetXInput" value="300">
+        <label for="resetYInput">Y:</label>
+        <input type="number" id="resetYInput" value="300">
+        <label for="resetAngleInput">Angle:</label>
+        <input type="number" id="resetAngleInput" value="0">
+      </div>
+      <button id="setResetButton">Set Reset</button>
+      <h3>Set Robot Size:</h3>
+      <div>
+        <label for="robotWidthInput">Width:</label>
+        <input type="number" id="robotWidthInput" value="40">
+        <label for="robotHeightInput">Height:</label>
+        <input type="number" id="robotHeightInput" value="40">
+      </div>
+      <button id="setRobotSizeButton">Set Size</button>
+      <div id="timerDisplay">Time: 0.0s</div>
+      <div id="scoreDisplay">Score: 0</div>
+      <button id="faqButton">FAQ</button>
     </div>
-
-    <button id="faqButton" class="floating-btn">?</button>
-    <div id="faqPopup" class="popup">
-      <h2>Command FAQ</h2>
+    <canvas id="field" width="800" height="800"></canvas>
+    <div id="faqPopup" style="display: none;">
+      <h2>FAQ</h2>
+      <p><b>Commands:</b></p>
       <ul>
-        <li><strong>move [distance]</strong> - Move forward by [distance] pixels.</li>
-        <li><strong>back [distance]</strong> - Move backward by [distance] pixels.</li>
-        <li><strong>turn [degrees]</strong> - Turn by [degrees].</li>
-        <li><strong>score</strong> - Add points to the score.</li>
+        <li><b>move X</b> - Move forward X pixels.</li>
+        <li><b>back X</b> - Move backward X pixels.</li>
+        <li><b>turn X</b> - Turn X degrees.</li>
+        <li><b>score</b> - Add points to the score.</li>
       </ul>
+      <p><b>Dimensions:</b></p>
+      <p>Field: 600 x 600 (144'' x 144'')</p>
+      <p>Tile: 100 x 100 (24'' x 24'')</p>
+      <p>1 inch = 4.167 pixels</p>
       <button id="closeFaqButton">Close</button>
     </div>
   </div>
