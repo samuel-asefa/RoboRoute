@@ -25,6 +25,9 @@ body {
     display: flex;
     align-items: flex-start;
     gap: 5%;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   #controls {
@@ -32,6 +35,7 @@ body {
     flex-direction: column;
     gap: 5px;
     max-width: 30%;
+    
   }
   
   #controls h1 {
@@ -113,11 +117,11 @@ body {
   }
   
   #faqPopup div, #sizePopup div, #initialPositionPopup div, #speedPopup div {
-    margin-bottom: 12px;
+    margin-bottom: 5px;
   }
 
   #faqPopup button, #sizePopup button, #initialPositionPopup button, #speedPopup button {
-    margin-top: 10px;
+    margin-top: 5px;
     background-color: #ff6666;
   }
   
