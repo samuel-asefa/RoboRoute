@@ -30,9 +30,15 @@ Check FAQ for a command library"></textarea>
 
       <h3>Set Initial Position:</h3>
       <button id="initialPositionButton">Initial Position</button>
-    
-      <div id="timerDisplay">Time: 0.0s</div>
-      <div id="scoreDisplay">Score: 0</div>
+
+      <h3>Set Custom Robot Image:</h3>
+      <input type="file" id="robotImageInput" accept="image/*">
+      <button id="uploadRobotImageButton">Set Robot Image</button>
+      <div>
+        <div id="timerDisplay">Time: 0.0s</div>
+        <div id="scoreDisplay">Score: 0</div>
+      </div>
+      
       <button id="faqButton">FAQ</button>
       
     </div>
@@ -46,7 +52,7 @@ Check FAQ for a command library"></textarea>
         <li><b>move X</b> - Move forward X pixels.</li>
         <li><b>back X</b> - Move backward X pixels.</li>
         <li><b>turn X</b> - Turn X degrees.</li>
-        <li><b>score</b> - Add points to the score.</li>
+        <li><b>score X</b> - Adds X point(s) to the score.</li>
       </ul>
       <p><b>Dimensions:</b></p>
       <p>Field: 800 x 800 (144'' x 144'')</p>

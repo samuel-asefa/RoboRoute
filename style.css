@@ -25,7 +25,8 @@ body {
     display: flex;
     align-items: flex-start;
     gap: 5%;
-    width: 50%;
+    width: 65%;
+    padding-left: 0%;
     margin-left: auto;
     margin-right: auto;
   }
@@ -35,13 +36,17 @@ body {
     flex-direction: column;
     gap: 5px;
     max-width: 30%;
-    
   }
   
   #controls h1 {
     font-size: 24px;
     margin: 0;
     padding-bottom: 5%;
+  }
+
+  #controls h3 {
+    width: 250%;
+    
   }
   
   textarea {
@@ -70,9 +75,45 @@ body {
   }
   
   input {
-    width: 60px;
-    padding: 4px;
-    margin-left: 10px;
+    padding: 8px 12px;
+    width: 35%;
+    padding-left: 10%;
+    padding-right: 10%;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007bff; /* Custom background color */
+    color: #007bff; /* Custom text color */
+    border: none; /* No border */
+    border-radius: 4px; /* Rounded corners */
+    text-align: center; /* Center the text */
+  }
+
+  input:hover {
+    color: #0056b3;
+  }
+
+  #robotImageInput {
+    margin-bottom: 10px;
+  }
+
+  #uploadRobotImageButton {
+    background-color: #28a745;
+  }
+
+  #uploadRobotImageButton:hover {
+    background-color: #218838;
+  }
+
+  #robotImageInput {
+    margin-bottom: 10px;
+  }
+
+  #robotImageInput {
+    background-color: #007bff;
+  }
+
+  #robotImageInput:hover {
+    background-color: #0056b3;
   }
   
   canvas {

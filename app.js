@@ -15,6 +15,10 @@ const robotWidthInput = document.getElementById("robotWidthInput");
 const robotHeightInput = document.getElementById("robotHeightInput");
 const timerDisplay = document.getElementById("timerDisplay");
 const scoreDisplay = document.getElementById("scoreDisplay");
+const robotImageInput = document.getElementById("robotImageInput");
+const uploadRobotImageButton = document.getElementById("uploadRobotImageButton");
+
+
 // Popup Consts
 const faqButton = document.getElementById("faqButton");
 const faqPopup = document.getElementById("faqPopup");
@@ -125,8 +129,8 @@ function executeCommand(command) {
 
       requestAnimationFrame(animateTurn);
     } else if (action === "score") {
-      if (!isNaN(value)) { 
-        robot.score += value; // Add the specified value to the score
+      if (!isNaN(value)) {
+        robot.score += value;
       } else {
         console.error("Invalid value for score command");
       }
@@ -140,10 +144,10 @@ function executeCommand(command) {
 
 // Execute code input
 async function executeCode() {
-  resetRobot(); // Resets Robot to Initial Position Before Executing Code
+  resetRobot();
   const commands = codeInput.value.split("\n").map((cmd) => cmd.trim());
   animationRunning = true;
-  timer = 0.1; // Reset timer
+  timer = 0.1;
   timerDisplay.textContent = `Time: ${timer.toFixed(1)}s`;
 
   const interval = setInterval(() => {
@@ -198,13 +202,38 @@ turnSpeedInput.addEventListener("change", () => {
   turnSpeed = parseFloat(turnSpeedInput.value);
 });
 
+// Robot Image Upload
+uploadRobotImageButton.addEventListener("click", () => {
+  resetRobot();
+});
+
+robotImageInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      robotImage.src = e.target.result;
+      render();
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
 // Add event listeners
 runButton.addEventListener("click", () => executeCode());
 routeButton.addEventListener("click", () => {
   alert("Route visualization not implemented yet.");
 });
 
-// Robot Speed Popup
+// FAQ Popup
+faqButton.addEventListener("click", () => {
+  faqPopup.style.display = "block";
+});
+closeFaqButton.addEventListener("click", () => {
+  faqPopup.style.display = "none";
+});
+
+// Speed Popup
 speedButton.addEventListener("click", () => {
   speedPopup.style.display = "block";
 });
@@ -212,7 +241,7 @@ closeSpeedButton.addEventListener("click", () => {
   speedPopup.style.display = "none";
 });
 
-// Robot Size Popup
+// Size Popup
 robotSizeButton.addEventListener("click", () => {
   sizePopup.style.display = "block";
 });
@@ -226,14 +255,6 @@ initialPositionButton.addEventListener("click", () => {
 });
 closeInitialPositionButton.addEventListener("click", () => {
   initialPositionPopup.style.display = "none";
-});
-
-// FAQ Popup
-faqButton.addEventListener("click", () => {
-  faqPopup.style.display = "block";
-});
-closeFaqButton.addEventListener("click", () => {
-  faqPopup.style.display = "none";
 });
 
 // Render initial setup
