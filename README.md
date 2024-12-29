@@ -20,9 +20,9 @@ Here is a list of commands to use when running your simulation:
   ```score``` - Add points to the score. <br>
 
 ## 📏 Dimension Info
-Field: 600 x 600 (144'' x 144'')
+Field: 800 x 800 (144'' x 144'')
 
 Tile: 100 x 100 (24'' x 24'')
 
-1 inch = 4.167 pixels
+1 inch = 5.56 pixels
 
