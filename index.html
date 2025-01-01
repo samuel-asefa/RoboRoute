@@ -12,10 +12,8 @@
 </head>
 <body>
   <div id="container">
-    <div id="controls">
-      <header>
-        <h1 class="title">RoboRoute</h1>
-      </header>
+    <div id="left"> <!-- Left UI -->
+      <h1 class="title"><a href="https://roboroute.netlify.app/">RoboRoute</a></h1>
       <textarea id="codeInput" placeholder="Enter commands here! 
       
 Check FAQ for a command library"></textarea>
@@ -42,7 +40,12 @@ Check FAQ for a command library"></textarea>
       <button id="faqButton">FAQ</button>
       
     </div>
-    <canvas id="field" width="800" height="800"></canvas>
+
+    <canvas id="field" width="800" height="800"></canvas> <!-- Center UI -->
+
+    <div id="right"> <!-- Right UI -->
+      <!-- <h3>Generate Code</h3> -->
+    </div>
     
     <!-- Popups -->
     <div id="faqPopup" style="display: none;">

@@ -18,7 +18,6 @@ const scoreDisplay = document.getElementById("scoreDisplay");
 const robotImageInput = document.getElementById("robotImageInput");
 const uploadRobotImageButton = document.getElementById("uploadRobotImageButton");
 
-
 // Popup Consts
 const faqButton = document.getElementById("faqButton");
 const faqPopup = document.getElementById("faqPopup");
@@ -35,13 +34,13 @@ const closeInitialPositionButton = document.getElementById("closeInitialPosition
 
 // Variables for robot state
 let robot = {
-  x: 300,
-  y: 300,
+  x: 40,
+  y: 460,
   angle: 0,
   width: 40,
   height: 40,
-  resetX: 300,
-  resetY: 300,
+  resetX: 40,
+  resetY: 460,
   resetAngle: 0,
   score: 0,
 };

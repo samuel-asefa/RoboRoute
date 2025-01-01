@@ -1,172 +1,198 @@
 body {
-    font-family: 'Noto Sans', sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: var(--MainColor);
-    color: var(--White)
-  }
+  font-family: 'Noto Sans', sans-serif;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  display: relative;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--MainColor);
+  color: var(--White);
+}
 
-  :root {
-    --MainColor: rgb(30, 30, 30);
-    --SecondaryColor: rgb(25, 25, 25);
-    --White: rgb(230, 230, 230);
+:root {
+  --MainColor: rgb(30, 30, 30);
+  --SecondaryColor: rgb(25, 25, 25);
+  --White: rgb(230, 230, 230);
 }
 
 ::selection {
-    background-color: var(--White);
-    color: var(--MainColor);
+  background-color: var(--White);
+  color: var(--MainColor);
+}
+
+@media only screen and (max-width: 620px) {
+  /* For mobile phones: */
+  #left, #canvas, #right {
+    width: 100%;
+  }
+  #container {
+    display: relative;
+  }
 }
   
-  #container {
-    display: flex;
-    align-items: flex-start;
-    gap: 5%;
-    width: 65%;
-    padding-left: 0%;
-    margin-left: auto;
-    margin-right: auto;
-  }
+#container {
+  display: flex;
+  align-items: flex-start;
+  gap: 5%;
+  padding-left: 0%;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  #controls {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    max-width: 30%;
-  }
+#left, #right {
+  display: flex;
+  flex-direction: column;
+  float: left;
+  gap: 5px;
+  max-width: 30%;
+}
   
-  #controls h1 {
-    font-size: 24px;
-    margin: 0;
-    padding-bottom: 5%;
-  }
+header {
+  font-size: 100%;
+  margin-top: 1%;
+  margin-bottom: 1%;
+  text-align: center;
+}
+  
+a {
+  color: white;
+  text-decoration: none;
+  transition: 0.25s;
+}
 
-  #controls h3 {
-    width: 250%;
-    
-  }
-  
-  textarea {
-    width: 100%;
-    height: 120px;
-    resize: none;
-    margin-bottom: 10px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 100%;
-  }
-  
-  button {
-    padding: 8px 12px;
-    padding-left: 10%;
-    padding-right: 10%;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: var(--White);
-    border: none;
-    border-radius: 4px;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
-  input {
-    padding: 8px 12px;
-    width: 35%;
-    padding-left: 10%;
-    padding-right: 10%;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #007bff; /* Custom background color */
-    color: #007bff; /* Custom text color */
-    border: none; /* No border */
-    border-radius: 4px; /* Rounded corners */
-    text-align: center; /* Center the text */
-  }
+a:hover {
+  color: var(--White)
+}
 
-  input:hover {
-    color: #0056b3;
-  }
+#h3 {
+  width: 250%; 
+}
+  
+textarea {
+  width: 100%;
+  height: 120px;
+  resize: none;
+  margin-bottom: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 100%;
+}
+  
+button {
+  padding: 8px 12px;
+  padding-left: 10%;
+  padding-right: 10%;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: var(--White);
+  border: none;
+  border-radius: 4px;
+  transition: 0.25s;
+}
+  
+button:hover {
+  background-color: #0056b3;
+}
+  
+input {
+  padding: 8px 12px;
+  width: 35%;
+  padding-left: 10%;
+  padding-right: 10%;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #007bff; /* Custom background color */
+  color: var(--White); /* Custom text color */
+  border: none; /* No border */
+  border-radius: 4px; /* Rounded corners */
+  text-align: center; /* Center the text */
+  transition: 0.25s;
+}
 
-  #robotImageInput {
-    margin-bottom: 10px;
-  }
+input:hover {
+  background-color: #0056b3;
+}
 
-  #uploadRobotImageButton {
-    background-color: #28a745;
-  }
+#robotImageInput {
+  margin-bottom: 10px;
+}
 
-  #uploadRobotImageButton:hover {
-    background-color: #218838;
-  }
+#uploadRobotImageButton {
+  background-color: #28a745;
+  transition: 0.25s;
+}
 
-  #robotImageInput {
-    margin-bottom: 10px;
-  }
+#uploadRobotImageButton:hover {
+  background-color: #218838;
+}
 
-  #robotImageInput {
-    background-color: #007bff;
-  }
+#robotImageInput {
+  margin-bottom: 10px;
+}
 
-  #robotImageInput:hover {
-    background-color: #0056b3;
-  }
-  
-  canvas {
-    border: 2px solid #ccc;
-    background-color: white;
-  }
-  
-  #timerDisplay, #scoreDisplay {
-    font-size: 120%;
-    font-weight: 600;
-    margin: 5px 0;
-    background-color: rgb(75, 75, 75);
-    padding: 2% 4%;
-    border-radius: 2%;
-    max-width: 40%;
-    display: flex;
-  }
-  
-  #faqPopup, #sizePopup, #initialPositionPopup, #speedPopup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--SecondaryColor);
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    z-index: 1000;
-  }
-  
-  #faqPopup h2, #sizePopup h2, #initialPositionPopup h2, #speedPopup h2 {
-    margin-top: 0;
-  }
-  
-  #faqPopup ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  #faqPopup ul li {
-    margin: 8px 0;
-  }
-  
-  #faqPopup div, #sizePopup div, #initialPositionPopup div, #speedPopup div {
-    margin-bottom: 5px;
-  }
+#robotImageInput {
+  background-color: #007bff;
+  transition: 0.25s;
+}
 
-  #faqPopup button, #sizePopup button, #initialPositionPopup button, #speedPopup button {
-    margin-top: 5px;
-    background-color: #ff6666;
-  }
+#robotImageInput:hover {
+  background-color: #0056b3;
+}
   
-  #faqPopup button:hover, #sizePopup button:hover, #initialPositionPopup button:hover, #speedPopup button:hover {
-    background-color: #cc3333;
-  }
+canvas {
+  border: 2px solid #ccc;
+  background-color: white;
+}
+  
+#timerDisplay, #scoreDisplay {
+  font-size: 120%;
+  font-weight: 600;
+  margin: 5px 0;
+  background-color: rgb(75, 75, 75);
+  padding: 2% 4%;
+  border-radius: 2%;
+  max-width: 40%;
+  display: flex;
+}
+  
+#faqPopup, #sizePopup, #initialPositionPopup, #speedPopup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--SecondaryColor);
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 10;
+}
+  
+#faqPopup h2, #sizePopup h2, #initialPositionPopup h2, #speedPopup h2 {
+  margin-top: 0;
+}
+  
+#faqPopup ul {
+  list-style-type: none;
+  padding: 0;
+}
+  
+#faqPopup ul li {
+  margin: 8px 0;
+}
+  
+#faqPopup div, #sizePopup div, #initialPositionPopup div, #speedPopup div {
+  margin-bottom: 5px;
+}
+
+#faqPopup button, #sizePopup button, #initialPositionPopup button, #speedPopup button {
+  margin-top: 5px;
+  background-color: #ff6666;
+  transition: 0.25s;
+}
+  
+#faqPopup button:hover, #sizePopup button:hover, #initialPositionPopup button:hover, #speedPopup button:hover {
+  background-color: #cc3333;
+}
   
