@@ -11,28 +11,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="container">
+  <div id="container" style="overflow: auto;">
     <div id="left"> <!-- Left UI -->
-      <h1 class="title"><a href="https://roboroute.netlify.app/">RoboRoute</a></h1>
+      <h1><a href="https://roboroute.netlify.app/">RoboRoute</a></h1>
+      <h3>Commands</h3>
       <textarea id="codeInput" placeholder="Enter commands here! 
       
 Check FAQ for a command library"></textarea>
       <button id="runButton">Run Simulation</button>
       <button id="routeButton">Show Route</button>
 
-      <h3>Set Robot Speed:</h3>
-      <button id="robotSpeedButton">Robot Speed</button>
+      <h3 id="configurationheader">Configure Simulation</h3>
+      <button id="robotSpeedButton">Set Robot Speed</button>
       
-      <h3>Set Robot Size:</h3>
-      <button id="robotSizeButton">Robot Size</button>
+      <button id="robotSizeButton">Set Robot Size</button>
 
-      <h3>Set Initial Position:</h3>
-      <button id="initialPositionButton">Initial Position</button>
+      <button id="initialPositionButton">Set Initial Position</button>
 
-      <h3>Set Custom Robot Image:</h3>
       <input type="file" id="robotImageInput" accept="image/*">
       <button id="uploadRobotImageButton">Set Robot Image</button>
-      <div>
+      <div id="simulation-details">
         <div id="timerDisplay">Time: 0.0s</div>
         <div id="scoreDisplay">Score: 0</div>
       </div>
@@ -42,10 +40,6 @@ Check FAQ for a command library"></textarea>
     </div>
 
     <canvas id="field" width="800" height="800"></canvas> <!-- Center UI -->
-
-    <div id="right"> <!-- Right UI -->
-      <!-- <h3>Generate Code</h3> -->
-    </div>
     
     <!-- Popups -->
     <div id="faqPopup" style="display: none;">
