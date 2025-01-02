@@ -52,7 +52,7 @@ let animationRunning = false;
 
 // Load field and robot images
 const fieldImage = new Image();
-fieldImage.src = "field.png";
+fieldImage.src = "field.jpg";
 
 const robotImage = new Image();
 robotImage.src = "robot.png";
