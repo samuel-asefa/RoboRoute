@@ -66,6 +66,19 @@ a:hover {
   color: rgb(200,200,200);
 }
 
+#header {
+  display: flex;
+  align-items: center;
+  align-content: center;
+}
+
+#logo {
+  display: flex;
+  margin-right: 5%;
+  width: 12%;
+  height: 12%;
+}
+
 h3 {
   margin-top: 0%;
   margin-bottom: 4%;
