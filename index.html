@@ -32,8 +32,9 @@ Check FAQ for a command library."></textarea>
 
       <button id="initialPositionButton">Set Initial Position</button>
 
-      <input type="file" id="robotImageInput" accept="image/*">
-      <button id="uploadRobotImageButton">Set Robot Image</button>
+      <button id="robotImageButton">Set Robot Image</button>
+
+      
       <div id="simulation-details">
         <div id="timerDisplay">Time: 0.0s</div>
         <div id="scoreDisplay">Score: 0</div>
@@ -103,6 +104,12 @@ Check FAQ for a command library."></textarea>
       </div>
         <button id="setResetButton">Set Initial Position</button>
         <button id="closeInitialPositionButton">Close</button>
+    </div>
+    <div id="robotImagePopup" style="display: none;">
+      <h2>Set Robot Image</h2>
+      <input type="file" id="robotImageInput" accept="image/*">
+      <button id="uploadRobotImageButton">Set Robot Image</button>
+      <button id="closeRobotImageButton">Close</button>
     </div>
   </div>
   <script src="app.js"></script>

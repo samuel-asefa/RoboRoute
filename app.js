@@ -31,6 +31,9 @@ const closeSizeButton = document.getElementById("closeSizeButton");
 const initialPositionButton = document.getElementById("initialPositionButton");
 const initialPositionPopup = document.getElementById("initialPositionPopup");
 const closeInitialPositionButton = document.getElementById("closeInitialPositionButton");
+const robotImageButton = document.getElementById("robotImageButton");
+const robotImagePopup = document.getElementById("robotImagePopup");
+const closeRobotImagePopup = document.getElementById("closeRobotImagePopup");
 
 // Variables for robot state
 let robot = {
@@ -254,6 +257,14 @@ initialPositionButton.addEventListener("click", () => {
 });
 closeInitialPositionButton.addEventListener("click", () => {
   initialPositionPopup.style.display = "none";
+});
+
+// Robot Image Popup
+robotImageButton.addEventListener("click", () => {
+  robotImagePopup.style.display = "block";
+});
+closeRobotImageButton.addEventListener("click", () => {
+  robotImagePopup.style.display = "none";
 });
 
 // Render initial setup

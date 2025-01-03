@@ -188,7 +188,7 @@ canvas {
   flex-direction: row;
 }
   
-#faqPopup, #sizePopup, #initialPositionPopup, #speedPopup {
+#faqPopup, #sizePopup, #initialPositionPopup, #speedPopup, #robotImagePopup {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -200,7 +200,7 @@ canvas {
   z-index: 10;
 }
   
-#faqPopup h2, #sizePopup h2, #initialPositionPopup h2, #speedPopup h2 {
+#faqPopup h2, #sizePopup h2, #initialPositionPopup h2, #speedPopup h2, #robotImagePopup {
   margin-top: 0;
 }
   
@@ -213,7 +213,7 @@ canvas {
   margin: 8px 0;
 }
   
-#faqPopup div, #sizePopup div, #initialPositionPopup div, #speedPopup div {
+#faqPopup div, #sizePopup div, #initialPositionPopup div, #speedPopup div, #robotImagePopup div {
   margin-bottom: 5px;
 }
 
@@ -227,12 +227,12 @@ canvas {
   background-color: #0056b3;
 }
   
-#closeFaqButton, #closeSpeedButton, #closeSizeButton, #closeInitialPositionButton {
+#closeFaqButton, #closeSpeedButton, #closeSizeButton, #closeInitialPositionButton, #closeRobotImageButton {
   margin-top: 5px;
   background-color: #ff6666;
   transition: 0.25s;
 }
 
-#closeFaqButton:hover, #closeSpeedButton:hover, #closeSizeButton:hover, #closeInitialPositionButton:hover {
+#closeFaqButton:hover, #closeSpeedButton:hover, #closeSizeButton:hover, #closeInitialPositionButton:hover, #closeRobotImageButton:hover {
   background-color: #cc3333;
 }
