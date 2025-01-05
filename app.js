@@ -37,12 +37,12 @@ const closeRobotImagePopup = document.getElementById("closeRobotImagePopup");
 
 // Variables for robot state
 let robot = {
-  x: 40,
+  x: 80,
   y: 460,
   angle: 0,
-  width: 40,
-  height: 40,
-  resetX: 40,
+  width: 118,
+  height: 94,
+  resetX: 80,
   resetY: 460,
   resetAngle: 0,
   score: 0,
