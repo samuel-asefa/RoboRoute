@@ -87,7 +87,7 @@ h3 {
 
 #configurationheader {
   margin-top: 6%;
-  margin-bottom: 4%;
+  margin-bottom: 2%;
   font-weight: 600;
 }
   
@@ -186,6 +186,11 @@ canvas {
   max-width: 42%;
   display: flex;
   flex-direction: row;
+}
+
+#repo-link {
+  text-decoration: underline;
+  color: #007bff;
 }
   
 #faqPopup, #sizePopup, #initialPositionPopup, #speedPopup, #robotImagePopup {
