@@ -46,6 +46,7 @@ let robot = {
   resetY: 460,
   resetAngle: 0,
   score: 0,
+  path: []
 };
 
 let speed = 100; // Pixels per second
@@ -55,7 +56,7 @@ let animationRunning = false;
 
 // Load field and robot images
 const fieldImage = new Image();
-fieldImage.src = "field.jpg";
+fieldImage.src = "field.png";
 
 const robotImage = new Image();
 robotImage.src = "robot.png";
@@ -144,6 +145,18 @@ function executeCommand(command) {
   });
 }
 
+function moveRobot(dx, dy) {
+  // Update the robot's position
+  robot.x += dx;
+  robot.y += dy;
+
+  // Save the current position to the path
+  robot.path.push({ x: robot.x, y: robot.y });
+}
+
+console.log("Current Path:", robot.path);
+
+
 // Execute code input
 async function executeCode() {
   resetRobot();
@@ -221,11 +234,45 @@ robotImageInput.addEventListener("change", (event) => {
   }
 });
 
+
+
 // Add event listeners
 runButton.addEventListener("click", () => executeCode());
 routeButton.addEventListener("click", () => {
-  alert("Route visualization not implemented yet.");
+  drawPath();
 });
+
+function drawPath() {
+  // Ensure the robot's path array exists and has at least two points
+  if (robot.path && robot.path.length > 1) {
+    // Clear the canvas before drawing the path
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Optionally re-draw the field background here, if necessary
+    drawField();
+
+    // Draw the path
+    ctx.beginPath();
+    ctx.strokeStyle = "red"; // Path color
+    ctx.lineWidth = 2; // Path line thickness
+
+    // Start at the first recorded position
+    ctx.moveTo(robot.path[0].x, robot.path[0].y);
+
+    // Draw lines connecting each recorded position
+    for (let i = 1; i < robot.path.length; i++) {
+      ctx.lineTo(robot.path[i].x, robot.path[i].y);
+    }
+
+    // Render the path
+    ctx.stroke();
+
+    // Optionally re-draw the robot at its current position
+    drawRobot(robot.x, robot.y, robot.angle);
+  } else {
+    alert("No path data available. Run some commands first!");
+  }
+}
 
 // FAQ Popup
 faqButton.addEventListener("click", () => {

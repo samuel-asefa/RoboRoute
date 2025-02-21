@@ -13,8 +13,8 @@ body {
 }
 
 :root {
-  --MainColor: rgb(30, 30, 30);
-  --SecondaryColor: rgb(25, 25, 25);
+  --MainColor: rgb(25, 25, 25);
+  --SecondaryColor: rgb(20, 20, 20);
   --White: rgb(230, 230, 230);
 }
 
@@ -74,9 +74,9 @@ a:hover {
 
 #logo {
   display: flex;
-  margin-right: 5%;
-  width: 12%;
-  height: 12%;
+  margin-right: 4%;
+  width: 10%;
+  height: 10%;
 }
 
 h3 {
@@ -93,11 +93,12 @@ h3 {
   
 textarea {
   margin-bottom: 0%;
-  width: 100%;
+  width: 98.35%;
   height: 120px;
   resize: none;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 100%;
+  outline: none;
 }
   
 button {
@@ -106,10 +107,11 @@ button {
   padding-left: 10%;
   padding-right: 10%;
   font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   background-color: #007bff;
+  border: 0.0em solid rgb(123,123,123);
   color: var(--White);
-  border: none;
   border-radius: 4px;
   transition: 0.25s;
 }
@@ -125,9 +127,9 @@ input {
   padding-right: 10%;
   font-size: 16px;
   cursor: pointer;
-  border: none; /* No border */
-  border-radius: 4px; /* Rounded corners */
-  text-align: center; /* Center the text */
+  border: none;
+  border-radius: 0.25rem;
+  text-align: center;
   transition: 0.25s;
 }
 
@@ -180,9 +182,10 @@ canvas {
   font-size: 120%;
   font-weight: 600;
   margin: 5px 0;
-  background-color: rgb(75, 75, 75);
+  background-color: rgb(50, 50, 50);
+  border: 0.1em solid rgb(40,40,40);
   padding: 1.5% 3%;
-  border-radius: 2%;
+  border-radius: 0.25rem;
   max-width: 42%;
   display: flex;
   flex-direction: row;
