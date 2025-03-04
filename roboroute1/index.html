@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoboRoute</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image" href="assets/favicon.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="container" style="overflow: auto;">
+    <div id="left"> <!-- Left UI -->
+      <div id="header">
+        <img src="assets/favicon.jpg" alt="" id="logo">
+        <h1><a href="https://roboroute.netlify.app/">RoboRoute</a></h1>
+      </div>
+      
+      <h3>Commands</h3>
+      <textarea id="codeInput" placeholder="Enter commands here! 
+      
+Check FAQ for a command library."></textarea>
+      <button id="runButton">Run Simulation</button>
+      <button id="routeButton">Show Route</button>
+
+      <h3 id="configurationheader">Configure Simulation</h3>
+      <button id="robotSpeedButton">Set Robot Speed</button>
+      
+      <button id="robotSizeButton">Set Robot Size</button>
+
+      <button id="initialPositionButton">Set Initial Position</button>
+
+      <button id="robotImageButton">Set Robot Image</button>
+      
+      <div id="simulation-details">
+        <div id="timerDisplay">Time: 0.0s</div>
+        <div id="scoreDisplay">Score: 0</div>
+      </div>
+      
+      <button id="faqButton">FAQ</button>
+      
+    </div>
+
+    <canvas id="field" width="800" height="800"></canvas> <!-- Center UI -->
+    
+    <!-- Popups -->
+    <div id="faqPopup" style="display: none;">
+      <h2>FAQ</h2>
+      <p><b>What is RoboRoute?</b></p>
+      <p>It is a simulation tool to help teams plan out their <br>auton and programming skills in a dynamic and <br>visual way!</p>
+      <p><b>Commands:</b></p>
+      <ul>
+        <li><b>move X</b> - Moves robot forward X pixels.</li>
+        <li><b>back X</b> - Moves robot backward X pixels.</li>
+        <li><b>turn X</b> - Turns robot X degrees clockwise.</li>
+        <li><b>turn -X</b> - Turns robot X degrees counterclockwise.</li>
+        <li><b>score X</b> - Adds X point(s) to the score.</li>
+      </ul>
+      <p><b>Dimensions:</b></p>
+      <p>Field: 800 x 800 (144'' x 144'')</p>
+      <p>Tile: 100 x 100 (24'' x 24'')</p>
+      <p>1 inch = 5.56 pixels</p>
+      <p>Feel free to check out the repository <a href="https://github.com/samuel-asefa/RoboRoute" target="_blank" id="repo-link">here</a>!</p>
+      <button id="closeFaqButton">Close</button>
+    </div>
+    <div id="speedPopup" style="display: none;">
+      <h2>Set Robot Speed</h2>
+      <div>
+        <label for="speedInput">Speed (px/s):</label>
+        <input type="number" id="speedInput" value="100">
+      </div>
+      <div>
+        <label for="turnSpeedInput">Turn Speed (°/s):</label>
+        <input type="number" id="turnSpeedInput" value="90">
+      </div>
+      <button id="closeSpeedButton">Close</button>
+    </div>
+    <div id="sizePopup" style="display: none;">
+      <h2>Set Robot Size</h2>
+      <div>
+        <label for="robotWidthInput">Width:</label>
+        <input type="number" id="robotWidthInput" value="40">
+      </div>
+      <div>
+        <label for="robotHeightInput">Height:</label>
+        <input type="number" id="robotHeightInput" value="40">
+      </div>
+      <button id="setRobotSizeButton">Set Size</button>
+      <button id="closeSizeButton">Close</button>
+    </div>
+    <div id="initialPositionPopup" style="display: none;">
+      <h2>Set Initial Robot Position</h2>
+      <div>
+        <label for="resetXInput">X:</label>
+        <input type="number" id="resetXInput" value="300">
+      </div>
+      <div>
+        <label for="resetYInput">Y:</label>
+        <input type="number" id="resetYInput" value="300">
+      </div>
+      <div>
+        <label for="resetAngleInput">Angle:</label>
+        <input type="number" id="resetAngleInput" value="0">
+      </div>
+        <button id="setResetButton">Set Initial Position</button>
+        <button id="closeInitialPositionButton">Close</button>
+    </div>
+    <div id="robotImagePopup" style="display: none;">
+      <h2>Set Robot Image</h2>
+      <input type="file" id="robotImageInput" accept="image/*">
+      <button id="uploadRobotImageButton">Set Robot Image</button>
+      <button id="closeRobotImageButton">Close</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
