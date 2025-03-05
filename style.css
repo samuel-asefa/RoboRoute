@@ -1,0 +1,92 @@
+body {
+    font-family: 'Roboto';
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    display: relative;
+    color: white;
+    background-color: rgb(25, 25, 25);
+}
+
+canvas {
+    margin-left: 0.4em;
+    border: 2px solid white;
+    cursor: crosshair;
+}
+
+#topbar {
+    margin-top: 0.4em;
+    display: flex;
+    align-items: left;
+}
+
+#topbar div {
+    margin-right: 0.75em;
+    float: left;
+}
+
+h1 {
+    margin-left: 0.3em;
+    margin-top: 0.2em;
+    font-size: 150%;
+}
+
+#tools {
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+#tools button {
+    margin-top: 0.4em;
+    padding: 0.2em 0.6em;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: rgb(25,25,25);
+    border: 0.1em solid rgb(50,50,50);
+    color: white;
+    transition: 0.25s;
+}
+
+#tools button:hover {
+    background-color: #2e2e2e;
+}
+
+#actions {
+    display: none;
+    position: absolute;
+    top: 250px;
+    right: 250px;
+}
+
+.active-mode {
+    background-color: #4CAF50; /* Green background when in insert mode */
+    color: white; /* White text for contrast */
+    transition: background-color 0.3s ease;
+}
+
+.active-mode:hover {
+    background-color: #45a049; /* Slightly darker green on hover */
+}
+
+.point-entry.drag-over {
+    background-color: #e0e0e0 !important;
+    border: 1px dashed #999 !important;
+}
+
+#pointInfo {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 250px;
+    background-color: rgb(25,25,25);
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#pointInfo h4 {
+    margin: 0;
+}

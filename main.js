@@ -3,8 +3,8 @@ const ctx = canvas.getContext("2d");
 
 let points = [];
 let history = {
-  past: [], // Array of previous point states
-  future: []  // Array of states that can be redone
+  past: [], // previous point states
+  future: []  // states that can be redone
 };
 let mode = "linear";
 let selectedPoint = null;
@@ -23,7 +23,6 @@ const deleteBtn = document.getElementById("deleteBtn");
 const insertBtn = document.getElementById("insertBtn");
 const insertPointBtn = document.getElementById("insertPointBtn");
 
-// Create point list container
 const pointListContainer = document.createElement("div");
 pointListContainer.id = "pointListContainer";
 pointListContainer.style.position = "absolute";
@@ -32,24 +31,21 @@ pointListContainer.style.right = "20px";
 pointListContainer.style.width = "200px";
 pointListContainer.style.maxHeight = "600px";
 pointListContainer.style.overflowY = "auto";
-pointListContainer.style.backgroundColor = "#f0f0f0";
-pointListContainer.style.border = "1px solid #ccc";
+pointListContainer.style.backgroundColor = "#222222";
+pointListContainer.style.border = "1px solid #121212";
 pointListContainer.style.padding = "10px";
 pointListContainer.style.borderRadius = "5px";
 pointListContainer.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.1)";
 
-// Create header for point list
 const pointListHeader = document.createElement("h3");
 pointListHeader.textContent = "Points List";
 pointListHeader.style.margin = "0 0 10px 0";
 pointListContainer.appendChild(pointListHeader);
 
-// Create point list
 const pointList = document.createElement("div");
 pointList.id = "pointList";
 pointListContainer.appendChild(pointList);
 
-// Add to document
 document.body.appendChild(pointListContainer);
 
 pointXInput.type = "number";
@@ -64,15 +60,13 @@ const CANVAS_HEIGHT = canvas.height;
 const VEX_MIN = -72;
 const VEX_MAX = 72;
 
-// Function to save the current state to history
+// saves current state to history
 function saveState() {
-  // Deep clone the points array to avoid reference issues
   const currentState = JSON.parse(JSON.stringify(points));
   
   // Add to past states
   history.past.push(currentState);
   
-  // Clear future states when a new action is performed
   history.future = [];
 }
 
@@ -114,6 +108,10 @@ function redo() {
   redraw();
 }
 
+const pathCanvas = new Image();
+pathCanvas.src = "field.png";
+
+
 // Add keyboard event listener for undo/redo
 document.addEventListener('keydown', (e) => {
   // Check for Ctrl + Z (Undo)
@@ -147,7 +145,7 @@ function canvasToVex(x, y) {
   };
 }
 
-function drawPoint(vexX, vexY, radius = 10, color = 'black', alpha = 1, heading = null, isHighlighted = false) {
+function drawPoint(vexX, vexY, radius = 50, color = 'black', alpha = 1, heading = null, isHighlighted = false) {
   const { x, y } = vexToCanvas(vexX, vexY);
   
   // Draw highlight if point is selected
@@ -217,10 +215,10 @@ function updatePointList() {
     
     // Highlight selected point
     if (selectedPointIndex === index) {
-      pointEntry.style.backgroundColor = "#ffffaa";
-      pointEntry.style.border = "1px solid #dddd00";
+      pointEntry.style.backgroundColor = "#333333";
+      pointEntry.style.border = "1px solid white";
     } else {
-      pointEntry.style.backgroundColor = "white";
+      pointEntry.style.backgroundColor = "#22222";
       pointEntry.style.border = "1px solid #ddd";
     }
     
@@ -261,47 +259,66 @@ function selectPoint(index) {
   redraw();
 }
 
+// Replace your current redraw function with this one
 function redraw() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   
-  // Draw the path first so it's behind the points
-  if (mode === "linear") {
-    drawLinearPath();
+  // Draw the background image first
+  const backgroundImage = new Image();
+  backgroundImage.src = "field.png"; // Replace with your image URL
+  
+  // Check if the image is already loaded
+  if (backgroundImage.complete) {
+    ctx.drawImage(backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    drawContent();
+  } else {
+    // If not loaded, wait for it to load
+    backgroundImage.onload = function() {
+      ctx.drawImage(backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      drawContent();
+    };
   }
   
-  // Draw all points with heading indicators
-  points.forEach((point, index) => {
-    const heading = point.heading !== undefined ? point.heading : 0;
-    const isHighlighted = index === selectedPointIndex;
-    drawPoint(point.x, point.y, 5, point.color || "black", 1, heading, isHighlighted);
-    
-    // Draw point number label
-    const { x, y } = vexToCanvas(point.x, point.y);
-    ctx.font = "12px Arial";
-    ctx.fillStyle = "black";
-    ctx.fillText(`${index + 1}`, x + 10, y + 5);
-  });
-  
-  // Draw hover point if in insert mode
-  if (insertMode && hoverPoint) {
-    // Calculate expected heading for the hover point
-    let heading = 0;
-    if (points.length > 0 && points[0].heading !== undefined) {
-      const prevHeading = points[hoverPoint.segmentIndex].heading;
-      const nextHeading = points[hoverPoint.segmentIndex + 1].heading;
-      heading = prevHeading + (nextHeading - prevHeading) * hoverPoint.t;
+  function drawContent() {
+    // Draw the path first so it's behind the points
+    if (mode === "linear") {
+      drawLinearPath();
     }
     
-    drawPoint(hoverPoint.x, hoverPoint.y, 7, "blue", 0.5, heading);
+    // Draw all points with heading indicators
+    points.forEach((point, index) => {
+      const heading = point.heading !== undefined ? point.heading : 0;
+      const isHighlighted = index === selectedPointIndex;
+      drawPoint(point.x, point.y, 5, point.color || "black", 1, heading, isHighlighted);
+      
+      // Draw point number label
+      const { x, y } = vexToCanvas(point.x, point.y);
+      ctx.font = "12px Arial";
+      ctx.fillStyle = "black";
+      ctx.fillText(`${index + 1}`, x + 10, y + 5);
+    });
+    
+    // Draw hover point if in insert mode
+    if (insertMode && hoverPoint) {
+      // Calculate expected heading for the hover point
+      let heading = 0;
+      if (points.length > 0 && points[0].heading !== undefined) {
+        const prevHeading = points[hoverPoint.segmentIndex].heading;
+        const nextHeading = points[hoverPoint.segmentIndex + 1].heading;
+        heading = prevHeading + (nextHeading - prevHeading) * hoverPoint.t;
+      }
+      
+      drawPoint(hoverPoint.x, hoverPoint.y, 7, "blue", 0.5, heading);
+    }
+    
+    // Draw headings text if needed
+    if (points.length > 0 && points[0].heading !== undefined) {
+      drawHeadingText();
+    }
+    
+    // Update point list UI
+    updatePointList();
   }
-  
-  // Draw headings text if needed
-  if (points.length > 0 && points[0].heading !== undefined) {
-    drawHeadingText();
-  }
-  
-  // Update point list UI
-  updatePointList();
 }
 
 // Calculate distance from point to line segment
@@ -516,25 +533,81 @@ canvas.addEventListener("click", (e) => {
   }
 });
 
+let trimMode = false;
+
+const trimBtn = document.getElementById("trimBtn");
+
+trimBtn.addEventListener("click", () => {
+  saveState();
+  trimMode = !trimMode;
+  if (trimMode) {
+    deleteMode = false;
+    insertMode = false;
+    
+    trimBtn.classList.add('active-mode');
+  } else {
+    trimBtn.classList.remove('active-mode');
+  }
+});
+
+// Modify the click event listener to handle trim mode
+canvas.addEventListener("click", (e) => {
+  if (e.button !== 0) return; // Only handle left clicks
+  
+  const { x, y } = canvasToVex(e.offsetX, e.offsetY);
+  
+  // Check if trimming
+  if (trimMode) {
+    // Find the clicked point
+    for (let i = 0; i < points.length; i++) {
+      const point = points[i];
+      const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+      if (distance < 2) {
+        // Save state before trimming
+        saveState();
+        
+        // Remove the clicked point and all subsequent points
+        points.splice(i);
+        
+        // Reset selection
+        selectedPointIndex = null;
+        selectedPoint = null;
+        hidePointInfo();
+        
+        // Redraw canvas
+        redraw();
+        
+        // Exit trim mode after trimming
+        trimMode = false;
+        trimBtn.classList.remove('active-mode');
+        
+        return;
+      }
+    }
+  }
+});
+
 deleteBtn.addEventListener("click", () => {
   saveState();
   deleteMode = !deleteMode;
   if (deleteMode) {
     insertMode = false;
-    insertBtn.textContent = "Insert Point";
+    deleteBtn.classList.add('active-mode');
+  } else {
+    deleteBtn.classList.remove('active-mode');
   }
-  deleteBtn.textContent = deleteMode ? "Exit Delete Mode" : "Delete Point";
 });
 
 insertBtn.addEventListener("click", () => {
-  saveState();
-  insertMode = !insertMode;
-  if (insertMode) {
-    deleteMode = false;
-    deleteBtn.textContent = "Delete Point";
-  }
-  insertBtn.textContent = insertMode ? "Exit Insert Mode" : "Insert Point";
-});
+    saveState();
+    insertMode = !insertMode;
+    if (insertMode) {
+      deleteMode = false;
+      insertBtn.classList.add('active-mode');
+    } else {
+      insertBtn.classList.remove('active-mode');
+    }
+  });
 
 function showPointInfo(index) {
   pointInfo.style.display = "block";
@@ -543,7 +616,6 @@ function showPointInfo(index) {
   pointXInput.value = selectedPoint.x.toFixed(2);
   pointYInput.value = selectedPoint.y.toFixed(2);
   
-  // Create or update heading input if needed
   let headingInput = document.querySelector("#headingInput");
   let headingLabel = document.querySelector("#headingLabel");
   
@@ -594,7 +666,6 @@ function showPointInfo(index) {
 
   insertPointBtn.onclick = () => insertPointAtIndex(index);
   
-  // Add point index information
   const pointIndexElement = document.querySelector("#pointIndexInfo");
   if (!pointIndexElement) {
     const pointIndexInfo = document.createElement("p");
@@ -605,7 +676,6 @@ function showPointInfo(index) {
     document.getElementById("pointIndexValue").textContent = index + 1;
   }
   
-  // Update the point list to highlight the selected point
   updatePointList();
 }
 
@@ -665,89 +735,98 @@ function drawHeadingText() {
   });
 }
 
-// Add buttons for moving points up/down in the order
-const moveUpButton = document.createElement("button");
-moveUpButton.textContent = "Move Up";
-moveUpButton.style.marginRight = "5px";
-moveUpButton.addEventListener("click", () => {
-  if (selectedPointIndex > 0) {
-    // Save state before moving
+// Function to handle point movement in either direction
+function movePoint(direction) {
+  if (direction === "up" && selectedPointIndex > 0) {
     saveState();
     
-    // Swap with previous point
+    // Swap the selected point with the one above it
     const temp = points[selectedPointIndex];
     points[selectedPointIndex] = points[selectedPointIndex - 1];
     points[selectedPointIndex - 1] = temp;
     
-    // Update selected index
+    // Update the selected point index
     selectedPointIndex--;
     selectedPoint = points[selectedPointIndex];
     showPointInfo(selectedPointIndex);
     redraw();
-  }
-});
-
-const moveDownButton = document.createElement("button");
-moveDownButton.textContent = "Move Down";
-moveDownButton.addEventListener("click", () => {
-  if (selectedPointIndex < points.length - 1) {
-    // Save state before moving
+  } 
+  else if (direction === "down" && selectedPointIndex < points.length - 1) {
     saveState();
     
-    // Swap with next point
+    // Swap the selected point with the one below it
     const temp = points[selectedPointIndex];
     points[selectedPointIndex] = points[selectedPointIndex + 1];
     points[selectedPointIndex + 1] = temp;
     
-    // Update selected index
+    // Update the selected point index
     selectedPointIndex++;
     selectedPoint = points[selectedPointIndex];
     showPointInfo(selectedPointIndex);
     redraw();
   }
+}
+
+// Add keyboard event listener to the document
+document.addEventListener("keydown", (event) => {
+  // Only process if we have a selected point and Ctrl key is pressed
+  if (selectedPointIndex !== null && selectedPointIndex !== undefined && event.ctrlKey) {
+    if (event.key === "ArrowUp") {
+      movePoint("up");
+      event.preventDefault(); // Prevent page scrolling
+    } 
+    else if (event.key === "ArrowDown") {
+      movePoint("down");
+      event.preventDefault(); // Prevent page scrolling
+    }
+  }
 });
 
-// Add buttons to point info panel after other buttons
+// Add keyboard event listener to the document
+document.addEventListener("keydown", (event) => {
+  // Only process if we have a selected point and Ctrl key is pressed
+  if (selectedPointIndex !== null && selectedPointIndex !== undefined && event.ctrlKey) {
+    if (event.key === "ArrowUp") {
+      movePoint("up");
+      event.preventDefault(); // Prevent page scrolling
+    } 
+    else if (event.key === "ArrowDown") {
+      movePoint("down");
+      event.preventDefault(); // Prevent page scrolling
+    }
+  }
+});
+
+// Add keyboard event listener to the document
+document.addEventListener("keydown", (event) => {
+  // Only process if we have a selected point
+  if (selectedPointIndex !== null && selectedPointIndex !== undefined) {
+    if (event.key === "ArrowUp") {
+      movePoint("up");
+      event.preventDefault(); // Prevent page scrolling
+    } 
+    else if (event.key === "ArrowDown") {
+      movePoint("down");
+      event.preventDefault(); // Prevent page scrolling
+    }
+  }
+});
+
 pointInfo.appendChild(document.createElement("hr"));
 const reorderContainer = document.createElement("div");
 reorderContainer.style.marginTop = "10px";
-reorderContainer.appendChild(moveUpButton);
-reorderContainer.appendChild(moveDownButton);
+
 pointInfo.appendChild(reorderContainer);
 
-// Create separate buttons for undo and redo
-const undoBtn = document.createElement("button");
-undoBtn.textContent = "Undo (Ctrl+Z)";
-undoBtn.style.marginRight = "10px";
-undoBtn.addEventListener("click", undo);
+const generateCodeBtn = document.getElementById("generateBtn");
+/*generateCodeBtn.textContent = "Generate Code";
+document.body.appendChild(generateCodeBtn);*/
 
-const redoBtn = document.createElement("button");
-redoBtn.textContent = "Redo (Ctrl+Y)";
-redoBtn.addEventListener("click", redo);
-
-// Add undo/redo buttons to the page
-const undoRedoContainer = document.createElement("div");
-undoRedoContainer.style.marginBottom = "10px";
-undoRedoContainer.appendChild(undoBtn);
-undoRedoContainer.appendChild(redoBtn);
-document.body.insertBefore(undoRedoContainer, canvas);
-
-// Note for the user
-const undoRedoNote = document.createElement("p");
-undoRedoNote.textContent = "Tip: Use Ctrl+Z to Undo and Ctrl+Y to Redo actions";
-undoRedoNote.style.color = "#666";
-undoRedoNote.style.fontSize = "0.9em";
-document.body.insertBefore(undoRedoNote, undoRedoContainer.nextSibling);
-
-const generateCodeBtn = document.createElement("button");
-generateCodeBtn.textContent = "Generate Code";
-document.body.appendChild(generateCodeBtn);
-
-const delayInput = document.createElement("input");
-delayInput.type = "number";
+const delayInput = document.getElementById("delayInput");
+/*delayInput.type = "number";
 delayInput.value = 500;
 delayInput.placeholder = "Delay (ms)";
-document.body.appendChild(delayInput);
+document.body.appendChild(delayInput);*/
 
 generateCodeBtn.addEventListener("click", () => {
   if (points.length < 1) return;
@@ -768,6 +847,4 @@ generateCodeBtn.addEventListener("click", () => {
   alert(code);
 });
 
-
-// Initialize the UI
 redraw();

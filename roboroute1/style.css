@@ -46,8 +46,9 @@ body {
 }
 
 #field {
-  width: 60%;
-  margin-top: 2%;
+  top: 0;
+  left: 0;  
+
 }
   
 header {
@@ -62,7 +63,7 @@ a {
   transition: 0.25s;
 }
 
-a:hover {
+a:hover { 
   color: rgb(200,200,200);
 }
 
