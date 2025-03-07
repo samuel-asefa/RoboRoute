@@ -30,6 +30,18 @@ h1 {
     margin-left: 0.3em;
     margin-top: 0.2em;
     font-size: 150%;
+    color: white;
+}
+
+#title {
+    color: rgb(255,255,255);
+    text-decoration: none;
+    transition: 0.25s;
+}
+
+#title:hover {
+    color: rgb(222,222,222);
+    text-decoration: none;
 }
 
 #tools {
@@ -51,6 +63,11 @@ h1 {
 
 #tools button:hover {
     background-color: #2e2e2e;
+}
+
+#tools input:focus {
+    width: 11.5em;
+    outline: none;
 }
 
 #actions {

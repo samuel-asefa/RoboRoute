@@ -109,7 +109,7 @@ function redo() {
 }
 
 const pathCanvas = new Image();
-pathCanvas.src = "field.png";
+pathCanvas.src = "high-stake-matches.png";
 
 
 // Add keyboard event listener for undo/redo
@@ -145,7 +145,7 @@ function canvasToVex(x, y) {
   };
 }
 
-function drawPoint(vexX, vexY, radius = 50, color = 'black', alpha = 1, heading = null, isHighlighted = false) {
+function drawPoint(vexX, vexY, radius = 5, color = 'black', alpha = 1, heading = null, isHighlighted = false) {
   const { x, y } = vexToCanvas(vexX, vexY);
   
   // Draw highlight if point is selected
@@ -169,7 +169,7 @@ function drawPoint(vexX, vexY, radius = 50, color = 'black', alpha = 1, heading 
     const radians = (90 - heading) * (Math.PI / 180);
     
     // Calculate the endpoint of the heading line
-    const lineLength = radius * 1.5;
+    const lineLength = radius * 1;
     const endX = x + Math.cos(radians) * lineLength;
     const endY = y - Math.sin(radians) * lineLength;
     
@@ -177,7 +177,7 @@ function drawPoint(vexX, vexY, radius = 50, color = 'black', alpha = 1, heading 
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(endX, endY);
-    ctx.strokeStyle = 'red';
+    ctx.strokeStyle = '#2f2f2e';
     ctx.lineWidth = 2;
     ctx.stroke();
   }
@@ -187,15 +187,25 @@ function drawPoint(vexX, vexY, radius = 50, color = 'black', alpha = 1, heading 
 
 function drawLinearPath() {
   if (points.length < 2) return;
+
+  // Draw the entire path as a single stroke without animation
   ctx.beginPath();
   const start = vexToCanvas(points[0].x, points[0].y);
   ctx.moveTo(start.x, start.y);
-  points.slice(1).forEach(point => {
-    const { x, y } = vexToCanvas(point.x, point.y);
+  
+  // Draw all segments in one go
+  for (let i = 1; i < points.length; i++) {
+    const { x, y } = vexToCanvas(points[i].x, points[i].y);
     ctx.lineTo(x, y);
-  });
+  }
+  
+  // Use a stroke style that matches your design
+  ctx.strokeStyle = "#bcd732"; // Yellow color for the path
+  ctx.lineWidth = 2;
   ctx.stroke();
 }
+
+
 
 function updatePointList() {
   // Clear current list
@@ -265,7 +275,7 @@ function redraw() {
   
   // Draw the background image first
   const backgroundImage = new Image();
-  backgroundImage.src = "field.png"; // Replace with your image URL
+  backgroundImage.src = "high-stake-matches.png"; // Replace with your image URL
   
   // Check if the image is already loaded
   if (backgroundImage.complete) {
@@ -289,11 +299,11 @@ function redraw() {
     points.forEach((point, index) => {
       const heading = point.heading !== undefined ? point.heading : 0;
       const isHighlighted = index === selectedPointIndex;
-      drawPoint(point.x, point.y, 5, point.color || "black", 1, heading, isHighlighted);
+      drawPoint(point.x, point.y, 5, point.color || "#bcd732", 1, heading, isHighlighted);
       
       // Draw point number label
       const { x, y } = vexToCanvas(point.x, point.y);
-      ctx.font = "12px Arial";
+      ctx.font = "12px Roboto";
       ctx.fillStyle = "black";
       ctx.fillText(`${index + 1}`, x + 10, y + 5);
     });
@@ -308,7 +318,7 @@ function redraw() {
         heading = prevHeading + (nextHeading - prevHeading) * hoverPoint.t;
       }
       
-      drawPoint(hoverPoint.x, hoverPoint.y, 7, "blue", 0.5, heading);
+      drawPoint(hoverPoint.x, hoverPoint.y, 5, "blue", 0.5, heading);
     }
     
     // Draw headings text if needed
@@ -599,15 +609,13 @@ deleteBtn.addEventListener("click", () => {
 });
 
 insertBtn.addEventListener("click", () => {
-    saveState();
-    insertMode = !insertMode;
-    if (insertMode) {
-      deleteMode = false;
-      insertBtn.classList.add('active-mode');
-    } else {
-      insertBtn.classList.remove('active-mode');
-    }
-  });
+  saveState();
+  if (insertMode) {
+    setActiveMode(null); // Turn off insert mode
+  } else {
+    setActiveMode(insertBtn); // Turn on insert mode
+  }
+});
 
 function showPointInfo(index) {
   pointInfo.style.display = "block";
@@ -726,8 +734,8 @@ function insertPointAtIndex(index) {
 }
 
 function drawHeadingText() {
-  ctx.font = "12px Arial";
-  ctx.fillStyle = "blue";
+  ctx.font = "12px Roboto";
+  ctx.fillStyle = "white";
   points.forEach(point => {
     const { x, y } = vexToCanvas(point.x, point.y);
     const heading = point.heading !== undefined ? point.heading.toFixed(0) : "0";
@@ -781,6 +789,214 @@ document.addEventListener("keydown", (event) => {
     }
   }
 });
+
+// Add this to the top of your main.js file with other variable declarations
+let currentFieldImage = new Image();
+currentFieldImage.src = "high-stake-matches.png"; // Default image
+let backgroundLoaded = false;
+
+// Add this HTML to your index.html file, right before the canvas element or in a logical place in your UI
+function addFieldSelector() {
+  // Create container for the field selection controls
+  const fieldSelectorContainer = document.createElement("div");
+  fieldSelectorContainer.id = "fieldSelectorContainer";
+  fieldSelectorContainer.style.marginBottom = "10px";
+  fieldSelectorContainer.style.display = "flex";
+  fieldSelectorContainer.style.alignItems = "center";
+  fieldSelectorContainer.style.marginLeft = "0.4em";
+  
+  // Create dropdown for preset fields
+  const fieldSelectLabel = document.createElement("label");
+  fieldSelectLabel.textContent = "Field: ";
+  fieldSelectLabel.style.marginRight = "5px";
+  fieldSelectLabel.style.color = "white";
+  
+  const fieldSelect = document.createElement("select");
+  fieldSelect.id = "fieldSelect";
+  fieldSelect.style.marginRight = "15px";
+  fieldSelect.style.padding = "4px";
+  fieldSelect.style.backgroundColor = "#333";
+  fieldSelect.style.color = "white";
+  fieldSelect.style.border = "1px solid #555";
+  
+  // Add preset field options
+  const presetFields = [
+    { value: "high-stake-matches.png", text: "High Stakes (Matches)" },
+    { value: "high-stake-skills.png", text: "High Stakes (Skills)" },
+    { value: "over-under-matches.png", text: "Over Under (Matches)" },
+    { value: "over-under-skills.png", text: "Over Under (Skills)" },
+    { value: "empty-field.png", text: "Empty Field" },
+    { value: "custom", text: "Custom Field" }
+  ];
+  
+  presetFields.forEach(field => {
+    const option = document.createElement("option");
+    option.value = field.value;
+    option.textContent = field.text;
+    fieldSelect.appendChild(option);
+  });
+  
+  // Create file input for custom field uploads
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.id = "customFieldInput";
+  fileInput.accept = "image/*";
+  fileInput.style.display = "none"; // Hide initially
+  
+  // Create upload button (visible when "Custom Upload" is selected)
+  const uploadButton = document.createElement("button");
+  uploadButton.id = "uploadFieldBtn";
+  uploadButton.textContent = "Upload Image";
+  uploadButton.style.display = "none";
+  uploadButton.style.padding = "4px 8px";
+  uploadButton.style.backgroundColor = "#444";
+  uploadButton.style.color = "white";
+  uploadButton.style.border = "1px solid #666";
+  uploadButton.style.cursor = "pointer";
+  
+  // Add event listener for dropdown change
+  fieldSelect.addEventListener("change", function() {
+    if (this.value === "custom") {
+      fileInput.style.display = "inline-block";
+      uploadButton.style.display = "inline-block";
+    } else {
+      fileInput.style.display = "none";
+      uploadButton.style.display = "none";
+      
+      // Load the selected preset field
+      loadFieldImage(this.value);
+    }
+  });
+  
+  // Add event listener for file input
+  fileInput.addEventListener("change", function() {
+    if (this.files && this.files[0]) {
+      uploadButton.textContent = "Upload " + this.files[0].name;
+    }
+  });
+  
+  // Add event listener for upload button
+  uploadButton.addEventListener("click", function() {
+    if (fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        loadFieldImage(e.target.result);
+      };
+      
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Append all elements to the container
+  fieldSelectorContainer.appendChild(fieldSelectLabel);
+  fieldSelectorContainer.appendChild(fieldSelect);
+  fieldSelectorContainer.appendChild(fileInput);
+  fieldSelectorContainer.appendChild(uploadButton);
+  
+  // Find the topbar element to insert after
+  const topbar = document.getElementById("topbar");
+  topbar.parentNode.insertBefore(fieldSelectorContainer, topbar.nextSibling);
+}
+
+// Function to load a field image
+function loadFieldImage(src) {
+  backgroundLoaded = false;
+  currentFieldImage = new Image();
+  
+  currentFieldImage.onload = function() {
+    backgroundLoaded = true;
+    redraw();
+  };
+  
+  currentFieldImage.onerror = function() {
+    console.error("Failed to load field image:", src);
+    // Revert to default if loading fails
+    currentFieldImage.src = "high-stake-matches.png";
+  };
+  
+  currentFieldImage.src = src;
+}
+
+// Modify the redraw function to use the current field image
+function updateRedrawFunction() {
+  // This assumes your original redraw function is defined somewhere in the code
+  // Here, we're just modifying how the background image is handled
+  const originalRedraw = redraw;
+  
+  redraw = function() {
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    
+    // Draw the background image
+    if (backgroundLoaded || currentFieldImage.complete) {
+      ctx.drawImage(currentFieldImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      backgroundLoaded = true;
+      drawContent();
+    } else {
+      // If not loaded, wait for it to load
+      currentFieldImage.onload = function() {
+        backgroundLoaded = true;
+        ctx.drawImage(currentFieldImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        drawContent();
+      };
+    }
+    
+    function drawContent() {
+      // Draw the path first so it's behind the points
+      if (mode === "linear") {
+        drawLinearPath();
+      }
+      
+      // Draw all points with heading indicators
+      points.forEach((point, index) => {
+        const heading = point.heading !== undefined ? point.heading : 0;
+        const isHighlighted = index === selectedPointIndex;
+        drawPoint(point.x, point.y, 5, point.color || "#bcd732", 1, heading, isHighlighted);
+        
+        // Draw point number label
+        const { x, y } = vexToCanvas(point.x, point.y);
+        ctx.font = "12px Roboto";
+        ctx.fillStyle = "white";
+        ctx.fillText(`${index + 1}`, x + 10, y + 5);
+      });
+      
+      // Draw hover point if in insert mode
+      if (insertMode && hoverPoint) {
+        // Calculate expected heading for the hover point
+        let heading = 0;
+        if (points.length > 0 && points[0].heading !== undefined) {
+          const prevHeading = points[hoverPoint.segmentIndex].heading;
+          const nextHeading = points[hoverPoint.segmentIndex + 1].heading;
+          heading = prevHeading + (nextHeading - prevHeading) * hoverPoint.t;
+        }
+        
+        drawPoint(hoverPoint.x, hoverPoint.y, 5, "white", 0.5, heading);
+      }
+      
+      // Draw headings text if needed
+      if (points.length > 0 && points[0].heading !== undefined) {
+        drawHeadingText();
+      }
+      
+      // Update point list UI
+      updatePointList();
+    }
+  };
+}
+
+// Initialize field selector and update redraw function
+function initializeFieldSelector() {
+  addFieldSelector();
+  updateRedrawFunction();
+  
+  // Set initial state
+  backgroundLoaded = false;
+  loadFieldImage("high-stake-matches.png");
+}
+
+// Call this function when the page loads
+window.addEventListener("DOMContentLoaded", initializeFieldSelector);
 
 // Add keyboard event listener to the document
 document.addEventListener("keydown", (event) => {
