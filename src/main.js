@@ -6,11 +6,13 @@ let history = {
   past: [], // previous point states
   future: []  // states that can be redone
 };
+
 let mode = "linear";
 let selectedPoint = null;
 let selectedPointIndex = null;
 let deleteMode = false;
 let insertMode = false;
+let trimMode = false;
 let isDragging = false;
 let hoverPoint = null;
 let isRotating = false;
@@ -22,11 +24,12 @@ const closePointInfoBtn = document.getElementById("closePointInfo");
 const deleteBtn = document.getElementById("deleteBtn");
 const insertBtn = document.getElementById("insertBtn");
 const insertPointBtn = document.getElementById("insertPointBtn");
+const trimBtn = document.getElementById("trimBtn");
 
 const pointListContainer = document.createElement("div");
 pointListContainer.id = "pointListContainer";
 pointListContainer.style.position = "absolute";
-pointListContainer.style.top = "50px";
+pointListContainer.style.top = "25px";
 pointListContainer.style.right = "20px";
 pointListContainer.style.width = "200px";
 pointListContainer.style.maxHeight = "600px";
@@ -57,6 +60,7 @@ document.getElementById("pointY").replaceWith(pointYInput);
 
 const CANVAS_WIDTH = canvas.width;
 const CANVAS_HEIGHT = canvas.height;
+// Unit: Inches
 const VEX_MIN = -72;
 const VEX_MAX = 72;
 
@@ -85,7 +89,6 @@ function undo() {
   selectedPointIndex = null;
   hidePointInfo();
   
-  // Redraw
   redraw();
 }
 
@@ -104,13 +107,11 @@ function redo() {
   selectedPointIndex = null;
   hidePointInfo();
   
-  // Redraw
   redraw();
 }
 
 const pathCanvas = new Image();
-pathCanvas.src = "high-stake-matches.png";
-
+pathCanvas.src = "../assets/fields/high-stakes-matches.png";
 
 // Add keyboard event listener for undo/redo
 document.addEventListener('keydown', (e) => {
@@ -205,8 +206,6 @@ function drawLinearPath() {
   ctx.stroke();
 }
 
-
-
 function updatePointList() {
   // Clear current list
   pointList.innerHTML = "";
@@ -269,13 +268,12 @@ function selectPoint(index) {
   redraw();
 }
 
-// Replace your current redraw function with this one
 function redraw() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   
   // Draw the background image first
   const backgroundImage = new Image();
-  backgroundImage.src = "high-stake-matches.png"; // Replace with your image URL
+  backgroundImage.src = "../assets/fields/high-stakes-matches.png";
   
   // Check if the image is already loaded
   if (backgroundImage.complete) {
@@ -348,61 +346,197 @@ function distToSegment(p, v, w) {
   return { distance, point: projection, segment: [v, w], t };
 }
 
-canvas.addEventListener("mousemove", (e) => {
+// Remove the existing click handlers (in your actual code)
+// and replace with this unified click handler
+canvas.addEventListener("click", (e) => {
+  if (e.button !== 0) return; // Only handle left clicks
+  
   const { x, y } = canvasToVex(e.offsetX, e.offsetY);
   
-  // Highlight points red when in delete mode
-  if (deleteMode) {
-    points.forEach(point => {
+  // Save state before modification
+  saveState();
+  
+  // Check if trimming mode is active
+  if (trimMode) {
+    // Find the clicked point
+    for (let i = 0; i < points.length; i++) {
+      const point = points[i];
       const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
-      point.color = (distance < 2) ? "red" : "black";
-    });
+      if (distance < 2) {
+        // Remove the clicked point and all subsequent points
+        points.splice(i);
+        
+        // Reset selection
+        selectedPointIndex = null;
+        selectedPoint = null;
+        hidePointInfo();
+        
+        redraw();
+        
+        // Exit trim mode after trimming
+        trimMode = false;
+        trimBtn.classList.remove('active-mode');
+        
+        return;
+      }
+    }
+    return;
   }
   
-  // Handle insert mode hover behavior
-  if (insertMode && points.length >= 2) {
-    let minDist = Infinity;
-    let closestPoint = null;
-    let closestSegment = null;
+  // Handle click when in insert mode
+  if (insertMode && hoverPoint) {
+    // Calculate heading if needed
+    let heading = 0;
+    if (points.length > 0 && points[0].heading !== undefined) {
+      const prevHeading = points[hoverPoint.segmentIndex].heading;
+      const nextHeading = points[hoverPoint.segmentIndex + 1].heading;
+      heading = prevHeading + (nextHeading - prevHeading) * hoverPoint.t;
+    }
     
-    // Check each line segment
-    for (let i = 0; i < points.length - 1; i++) {
-      const result = distToSegment({ x, y }, points[i], points[i+1]);
-      if (result.distance < minDist && result.distance < 2) {
-        minDist = result.distance;
-        closestPoint = result.point;
-        closestSegment = {
-          index: i,
-          t: result.t
+    // Insert the new point
+    points.splice(hoverPoint.segmentIndex + 1, 0, { 
+      x: hoverPoint.x, 
+      y: hoverPoint.y,
+      heading
+    });
+    
+    redraw();
+    return;
+  }
+
+  canvas.addEventListener("mousemove", (e) => {
+    const { x, y } = canvasToVex(e.offsetX, e.offsetY);
+    
+    // Highlight points red when in delete mode
+    if (deleteMode) {
+      points.forEach(point => {
+        const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+        point.color = (distance < 2) ? "red" : "#bcd732"; // Use your default color here
+      });
+    }
+    
+    // Handle insert mode hover behavior
+    if (insertMode && points.length >= 2) {
+      let minDist = Infinity;
+      let closestPoint = null;
+      let closestSegment = null;
+      
+      // Check each line segment
+      for (let i = 0; i < points.length - 1; i++) {
+        const result = distToSegment({ x, y }, points[i], points[i+1]);
+        if (result.distance < minDist && result.distance < 2) {
+          minDist = result.distance;
+          closestPoint = result.point;
+          closestSegment = {
+            index: i,
+            t: result.t
+          };
+        }
+      }
+      
+      if (closestPoint && minDist < 2) {
+        hoverPoint = { 
+          x: closestPoint.x, 
+          y: closestPoint.y,
+          segmentIndex: closestSegment.index,
+          t: closestSegment.t
         };
+        canvas.style.cursor = 'pointer'; // Change cursor to indicate insert possible
+      } else {
+        hoverPoint = null;
+        canvas.style.cursor = 'default';
+      }
+    } else {
+      hoverPoint = null;
+      // Reset cursor only if we're not on a draggable point
+      if (!isDragging) {
+        canvas.style.cursor = 'default';
       }
     }
     
-    if (closestPoint && minDist < 2) {
-      hoverPoint = { 
-        x: closestPoint.x, 
-        y: closestPoint.y,
-        segmentIndex: closestSegment.index,
-        t: closestSegment.t
-      };
-    } else {
-      hoverPoint = null;
+    // Update point while dragging
+    if (isDragging && selectedPoint) {
+      selectedPoint.x = x;
+      selectedPoint.y = y;
+      pointXInput.value = x.toFixed(2);
+      pointYInput.value = y.toFixed(2);
+      updatePointList();
     }
-  } else {
-    hoverPoint = null;
+    
+    redraw();
+  });
+  
+  // Handle regular point click/add
+  let clickedOnPoint = false;
+  
+  for (let i = 0; i < points.length; i++) {
+    const point = points[i];
+    const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+    if (distance < 2) {
+      clickedOnPoint = true;
+      if (deleteMode) {
+        points.splice(i, 1);
+        // Reset selection if deleted point was deleted
+        if (selectedPointIndex === i) {
+          selectedPointIndex = null;
+          selectedPoint = null;
+          hidePointInfo();
+        } else if (selectedPointIndex > i) {
+          // Adjust index if a point before the selected one was deleted
+          selectedPointIndex--;
+        }
+      } else if (!insertMode) {
+        selectedPointIndex = i;
+        showPointInfo(i);
+      }
+      redraw();
+      return;
+    }
   }
   
-  // Update point while dragging
-  if (isDragging && selectedPoint) {
-    selectedPoint.x = x;
-    selectedPoint.y = y;
-    pointXInput.value = x.toFixed(2);
-    pointYInput.value = y.toFixed(2);
-    updatePointList();
+  if (!clickedOnPoint && !deleteMode && !insertMode) {
+    // Initialize with heading if other points have it
+    const newPoint = { x, y };
+    
+    if (points.length > 0 && points[0].heading !== undefined) {
+      newPoint.heading = 0;
+    } else if (points.length === 0) {
+      // First point should have heading to initialize the system
+      newPoint.heading = 0;
+    }
+    
+    points.push(newPoint);
+    selectedPointIndex = points.length - 1;
+    selectedPoint = newPoint;
+    showPointInfo(selectedPointIndex);
+    redraw();
   }
-  
-  redraw();
 });
+
+function setActiveMode(button) {
+  // Turn off all modes first
+  deleteMode = false;
+  insertMode = false;
+  trimMode = false;
+  
+  // Remove active class from all buttons
+  deleteBtn.classList.remove('active-mode');
+  insertBtn.classList.remove('active-mode');
+  trimBtn.classList.remove('active-mode');
+  
+  // Set the specific mode based on which button was clicked
+  if (button === insertBtn) {
+    insertMode = true;
+    insertBtn.classList.add('active-mode');
+  } else if (button === deleteBtn) {
+    deleteMode = true;
+    deleteBtn.classList.add('active-mode');
+  } else if (button === trimBtn) {
+    trimMode = true;
+    trimBtn.classList.add('active-mode');
+  }
+  // If null is passed, all modes remain off
+}
 
 canvas.addEventListener("mousedown", (e) => {
   const { x, y } = canvasToVex(e.offsetX, e.offsetY);
@@ -467,6 +601,9 @@ canvas.addEventListener("wheel", (e) => {
   }
 });
 
+// Remove the existing click handlers (in your actual code)
+// and replace with this unified click handler
+// Remove the duplicated click event handler entirely and keep just one version
 canvas.addEventListener("click", (e) => {
   if (e.button !== 0) return; // Only handle left clicks
   
@@ -474,6 +611,33 @@ canvas.addEventListener("click", (e) => {
   
   // Save state before modification
   saveState();
+  
+  // Check if trimming mode is active
+  if (trimMode) {
+    // Find the clicked point
+    for (let i = 0; i < points.length; i++) {
+      const point = points[i];
+      const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+      if (distance < 2) {
+        // Remove the clicked point and all subsequent points
+        points.splice(i);
+        
+        // Reset selection
+        selectedPointIndex = null;
+        selectedPoint = null;
+        hidePointInfo();
+        
+        redraw();
+        
+        // Exit trim mode after trimming
+        trimMode = false;
+        trimBtn.classList.remove('active-mode');
+        
+        return;
+      }
+    }
+    return;
+  }
   
   // Handle click when in insert mode
   if (insertMode && hoverPoint) {
@@ -543,10 +707,6 @@ canvas.addEventListener("click", (e) => {
   }
 });
 
-let trimMode = false;
-
-const trimBtn = document.getElementById("trimBtn");
-
 trimBtn.addEventListener("click", () => {
   saveState();
   trimMode = !trimMode;
@@ -584,7 +744,6 @@ canvas.addEventListener("click", (e) => {
         selectedPoint = null;
         hidePointInfo();
         
-        // Redraw canvas
         redraw();
         
         // Exit trim mode after trimming
@@ -610,10 +769,19 @@ deleteBtn.addEventListener("click", () => {
 
 insertBtn.addEventListener("click", () => {
   saveState();
+  insertMode = !insertMode; // Toggle insert mode
+  
   if (insertMode) {
-    setActiveMode(null); // Turn off insert mode
+    // Turn off other modes
+    deleteMode = false;
+    trimMode = false;
+    
+    // Update button appearances
+    insertBtn.classList.add('active-mode');
+    deleteBtn.classList.remove('active-mode');
+    trimBtn.classList.remove('active-mode');
   } else {
-    setActiveMode(insertBtn); // Turn on insert mode
+    insertBtn.classList.remove('active-mode');
   }
 });
 
@@ -792,40 +960,44 @@ document.addEventListener("keydown", (event) => {
 
 // Add this to the top of your main.js file with other variable declarations
 let currentFieldImage = new Image();
-currentFieldImage.src = "high-stake-matches.png"; // Default image
+currentFieldImage.src = "../assets/fields/high-stakes-matches.png"; // Default image
 let backgroundLoaded = false;
 
 // Add this HTML to your index.html file, right before the canvas element or in a logical place in your UI
 function addFieldSelector() {
-  // Create container for the field selection controls
-  const fieldSelectorContainer = document.createElement("div");
-  fieldSelectorContainer.id = "fieldSelectorContainer";
-  fieldSelectorContainer.style.marginBottom = "10px";
-  fieldSelectorContainer.style.display = "flex";
-  fieldSelectorContainer.style.alignItems = "center";
-  fieldSelectorContainer.style.marginLeft = "0.4em";
-  
-  // Create dropdown for preset fields
+  // Create the field selector components to be added to the tools div
   const fieldSelectLabel = document.createElement("label");
-  fieldSelectLabel.textContent = "Field: ";
-  fieldSelectLabel.style.marginRight = "5px";
+  fieldSelectLabel.textContent = ""; // No field select label
   fieldSelectLabel.style.color = "white";
+  fieldSelectLabel.style.marginRight = "5px";
+  fieldSelectLabel.style.marginLeft = "0.0em";
   
   const fieldSelect = document.createElement("select");
   fieldSelect.id = "fieldSelect";
-  fieldSelect.style.marginRight = "15px";
-  fieldSelect.style.padding = "4px";
-  fieldSelect.style.backgroundColor = "#333";
+  fieldSelect.style.padding = "0.2em 0.6em";
+  fieldSelect.style.fontSize = "16px";
+  fieldSelect.style.fontWeight = "500";
+  fieldSelect.style.backgroundColor = "rgb(25,25,25)";
   fieldSelect.style.color = "white";
-  fieldSelect.style.border = "1px solid #555";
+  fieldSelect.style.border = "0.1em solid rgb(50,50,50)";
+  fieldSelect.style.transition = "0.25s";
+  fieldSelect.style.marginRight = "5px";
   
-  // Add preset field options
+  // Add hover effect to match other tools
+  fieldSelect.addEventListener("mouseover", function() {
+    this.style.backgroundColor = "#2e2e2e";
+  });
+  
+  fieldSelect.addEventListener("mouseout", function() {
+    this.style.backgroundColor = "rgb(25,25,25)";
+  });
+  
   const presetFields = [
-    { value: "high-stake-matches.png", text: "High Stakes (Matches)" },
-    { value: "high-stake-skills.png", text: "High Stakes (Skills)" },
-    { value: "over-under-matches.png", text: "Over Under (Matches)" },
-    { value: "over-under-skills.png", text: "Over Under (Skills)" },
-    { value: "empty-field.png", text: "Empty Field" },
+    { value: "../assets/fields/high-stakes-matches.png", text: "High Stakes (Matches)" },
+    { value: "../assets/fields/high-stakes-skills.png", text: "High Stakes (Skills)" },
+    { value: "../assets/fields/over-under-matches.png", text: "Over Under (Matches)" },
+    { value: "../assets/fields/over-under-skills.png", text: "Over Under (Skills)" },
+    { value: "../assets/fields/empty-field.png", text: "Empty Field" },
     { value: "custom", text: "Custom Field" }
   ];
   
@@ -842,17 +1014,36 @@ function addFieldSelector() {
   fileInput.id = "customFieldInput";
   fileInput.accept = "image/*";
   fileInput.style.display = "none"; // Hide initially
+  fileInput.style.marginLeft = "0.3em";
+  fileInput.style.padding = "0.2em";
+  fileInput.style.fontSize = "14px";
+  fileInput.style.backgroundColor = "rgb(25,25,25)";
+  fileInput.style.color = "white";
+  fileInput.style.border = "0.1em solid rgb(50,50,50)";
   
   // Create upload button (visible when "Custom Upload" is selected)
   const uploadButton = document.createElement("button");
   uploadButton.id = "uploadFieldBtn";
-  uploadButton.textContent = "Upload Image";
+  uploadButton.textContent = "Upload";
   uploadButton.style.display = "none";
-  uploadButton.style.padding = "4px 8px";
-  uploadButton.style.backgroundColor = "#444";
+  uploadButton.style.marginLeft = "0.0em";
+  uploadButton.style.padding = "0.2em 0.6em";
+  uploadButton.style.fontSize = "16px";
+  uploadButton.style.fontWeight = "500";
+  uploadButton.style.backgroundColor = "rgb(25,25,25)";
+  uploadButton.style.border = "0.1em solid rgb(50,50,50)";
   uploadButton.style.color = "white";
-  uploadButton.style.border = "1px solid #666";
+  uploadButton.style.transition = "0.25s";
   uploadButton.style.cursor = "pointer";
+  
+  // Add hover effect to match other buttons
+  uploadButton.addEventListener("mouseover", function() {
+    this.style.backgroundColor = "#2e2e2e";
+  });
+  
+  uploadButton.addEventListener("mouseout", function() {
+    this.style.backgroundColor = "rgb(25,25,25)";
+  });
   
   // Add event listener for dropdown change
   fieldSelect.addEventListener("change", function() {
@@ -871,7 +1062,11 @@ function addFieldSelector() {
   // Add event listener for file input
   fileInput.addEventListener("change", function() {
     if (this.files && this.files[0]) {
-      uploadButton.textContent = "Upload " + this.files[0].name;
+      const fileName = this.files[0].name;
+      // Truncate filename if too long
+      uploadButton.textContent = fileName.length > 8 ? 
+        "Upload " + fileName.substring(0, 5) + "..." : 
+        "Upload " + fileName;
     }
   });
   
@@ -889,15 +1084,14 @@ function addFieldSelector() {
     }
   });
   
-  // Append all elements to the container
-  fieldSelectorContainer.appendChild(fieldSelectLabel);
-  fieldSelectorContainer.appendChild(fieldSelect);
-  fieldSelectorContainer.appendChild(fileInput);
-  fieldSelectorContainer.appendChild(uploadButton);
+  // Get the tools div and append the new elements
+  const toolsDiv = document.getElementById("tools");
   
-  // Find the topbar element to insert after
-  const topbar = document.getElementById("topbar");
-  topbar.parentNode.insertBefore(fieldSelectorContainer, topbar.nextSibling);
+  // Add elements to the tools div
+  toolsDiv.appendChild(fieldSelectLabel);
+  toolsDiv.appendChild(fieldSelect);
+  toolsDiv.appendChild(fileInput);
+  toolsDiv.appendChild(uploadButton);
 }
 
 // Function to load a field image
@@ -913,7 +1107,7 @@ function loadFieldImage(src) {
   currentFieldImage.onerror = function() {
     console.error("Failed to load field image:", src);
     // Revert to default if loading fails
-    currentFieldImage.src = "high-stake-matches.png";
+    currentFieldImage.src = "../assets/fields/high-stakes-matches.png";
   };
   
   currentFieldImage.src = src;
@@ -992,7 +1186,7 @@ function initializeFieldSelector() {
   
   // Set initial state
   backgroundLoaded = false;
-  loadFieldImage("high-stake-matches.png");
+  loadFieldImage("../assets/fields/high-stakes-matches.png");
 }
 
 // Call this function when the page loads
