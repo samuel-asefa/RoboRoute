@@ -275,14 +275,18 @@ function redraw() {
   const backgroundImage = new Image();
   backgroundImage.src = "../assets/fields/high-stakes-matches.png";
   
+  // Apply transformation matrix for zoom and pan
+  ctx.save();
+  
   // Check if the image is already loaded
   if (backgroundImage.complete) {
-    ctx.drawImage(backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    // Draw the background with scaling and offset
+    ctx.drawImage(backgroundImage, offsetX, offsetY, CANVAS_WIDTH * scale, CANVAS_HEIGHT * scale);
     drawContent();
   } else {
     // If not loaded, wait for it to load
     backgroundImage.onload = function() {
-      ctx.drawImage(backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.drawImage(backgroundImage, offsetX, offsetY, CANVAS_WIDTH * scale, CANVAS_HEIGHT * scale);
       drawContent();
     };
   }
@@ -319,15 +323,19 @@ function redraw() {
       drawPoint(hoverPoint.x, hoverPoint.y, 5, "blue", 0.5, heading);
     }
     
-    // Draw headings text if needed
-    if (points.length > 0 && points[0].heading !== undefined) {
-      drawHeadingText();
-    }
+    // Add zoom level indicator
+    ctx.font = "14px Roboto";
+    ctx.fillStyle = "black";
+    ctx.fillText(`Zoom: ${(scale * 100).toFixed(0)}%`, 10, 20);
+    
+    // Restore the context
+    ctx.restore();
     
     // Update point list UI
     updatePointList();
   }
 }
+
 
 // Calculate distance from point to line segment
 function distToSegment(p, v, w) {
@@ -783,6 +791,24 @@ insertBtn.addEventListener("click", () => {
   }
 });
 
+const clearBtn = document.getElementById("clearBtn");
+
+clearBtn.addEventListener("click", () => {
+  // Save state before clearing
+  saveState();
+  
+  // Clear all points
+  points = [];
+  
+  // Reset selection
+  selectedPoint = null;
+  selectedPointIndex = null;
+  hidePointInfo();
+  
+  // Redraw the canvas
+  redraw();
+});
+
 
 
 
@@ -1221,11 +1247,11 @@ document.addEventListener("keydown", (event) => {
   if (selectedPointIndex !== null && selectedPointIndex !== undefined) {
     if (event.key === "ArrowUp") {
       movePoint("up");
-      event.preventDefault(); // Prevent page scrolling
+      event.preventDefault();
     } 
     else if (event.key === "ArrowDown") {
       movePoint("down");
-      event.preventDefault(); // Prevent page scrolling
+      event.preventDefault();
     }
   }
 });
@@ -1234,6 +1260,17 @@ pointInfo.appendChild(document.createElement("hr"));
 const reorderContainer = document.createElement("div");
 reorderContainer.style.marginTop = "10px";
 pointInfo.appendChild(reorderContainer);
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1263,408 +1300,5 @@ generateCodeBtn.addEventListener("click", () => {
   console.log(code);
   alert(code);
 });
-
-// Theme Switcher Functionality
-// This can be pasted directly into your existing code without modifications
-
-// Theme configurations
-const themes = {
-  light: {
-    background: "#f5f5f5",
-    text: "#333333",
-    buttonBg: "#e0e0e0",
-    buttonHover: "#d0d0d0",
-    buttonBorder: "#cccccc",
-    panelBg: "#ffffff",
-    panelBorder: "#dddddd",
-    pathColor: "#8ba929",
-    pointColor: "#7a9322",
-    pointHighlight: "rgba(255, 200, 0, 0.3)",
-    pointListBg: "#ffffff",
-    pointListEntryBg: "#f5f5f5",
-    pointListBorder: "#dddddd",
-    pointListSelectedBg: "#e0e0e0",
-    pointListText: "#333333",
-    pointListSecondaryText: "#666666"
-  },
-  dark: {
-    background: "#222222",
-    text: "#ffffff",
-    buttonBg: "rgb(25,25,25)",
-    buttonHover: "#2e2e2e",
-    buttonBorder: "rgb(50,50,50)",
-    panelBg: "#222222",
-    panelBorder: "#121212",
-    pathColor: "#bcd732",
-    pointColor: "#bcd732",
-    pointHighlight: "rgba(255, 255, 0, 0.3)",
-    pointListBg: "#222222",
-    pointListEntryBg: "#2a2a2a",
-    pointListBorder: "#121212",
-    pointListSelectedBg: "#333333",
-    pointListText: "#ffffff",
-    pointListSecondaryText: "#999999"
-  }
-};
-
-// Create theme switcher UI
-function createThemeSwitcher() {
-  const themeLabel = document.createElement("label");
-  themeLabel.textContent = "Theme:";
-  themeLabel.style.color = "white";
-  themeLabel.style.marginRight = "5px";
-  themeLabel.style.marginLeft = "10px";
-  
-  const themeSelect = document.createElement("select");
-  themeSelect.id = "themeSelect";
-  themeSelect.style.padding = "0.2em 0.6em";
-  themeSelect.style.fontSize = "16px";
-  themeSelect.style.fontWeight = "500";
-  themeSelect.style.backgroundColor = "rgb(25,25,25)";
-  themeSelect.style.color = "white";
-  themeSelect.style.border = "0.1em solid rgb(50,50,50)";
-  themeSelect.style.transition = "0.25s";
-  themeSelect.style.marginRight = "10px";
-  
-  // Add hover effect to match other tools
-  themeSelect.addEventListener("mouseover", function() {
-    this.style.backgroundColor = "#2e2e2e";
-  });
-  
-  themeSelect.addEventListener("mouseout", function() {
-    this.style.backgroundColor = "rgb(25,25,25)";
-  });
-  
-  // Theme options
-  const themeOptions = [
-    { value: "auto", text: "Auto" },
-    { value: "dark", text: "Dark" },
-    { value: "light", text: "Light" }
-  ];
-  
-  themeOptions.forEach(option => {
-    const optionElement = document.createElement("option");
-    optionElement.value = option.value;
-    optionElement.textContent = option.text;
-    themeSelect.appendChild(optionElement);
-  });
-  
-  // Get saved theme or default to auto
-  const savedTheme = localStorage.getItem("pathPlannerTheme") || "auto";
-  themeSelect.value = savedTheme;
-  
-  // Add event listener for theme change
-  themeSelect.addEventListener("change", function() {
-    const selectedTheme = this.value;
-    localStorage.setItem("pathPlannerTheme", selectedTheme);
-    applyTheme(selectedTheme);
-  });
-  
-  // Add to tools div
-  const toolsDiv = document.getElementById("tools");
-  toolsDiv.appendChild(themeLabel);
-  toolsDiv.appendChild(themeSelect);
-  
-  // Apply initial theme
-  applyTheme(savedTheme);
-}
-
-// Detect system theme preference
-function getSystemTheme() {
-  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-// Apply theme to all UI elements
-function applyTheme(themeName) {
-  // If auto, detect system preference
-  const themeToApply = themeName === "auto" ? getSystemTheme() : themeName;
-  const theme = themes[themeToApply];
-  
-  // Apply theme to document body
-  document.body.style.backgroundColor = theme.background;
-  document.body.style.color = theme.text;
-  
-  // Apply to all buttons
-  const buttons = document.querySelectorAll('button');
-  buttons.forEach(button => {
-    button.style.backgroundColor = theme.buttonBg;
-    button.style.color = theme.text;
-    button.style.border = `0.1em solid ${theme.buttonBorder}`;
-    
-    // Remove existing listeners
-    const newButton = button.cloneNode(true);
-    button.parentNode.replaceChild(newButton, button);
-    
-    // Add hover effects
-    newButton.addEventListener("mouseover", function() {
-      this.style.backgroundColor = theme.buttonHover;
-    });
-    
-    newButton.addEventListener("mouseout", function() {
-      this.style.backgroundColor = theme.buttonBg;
-    });
-    
-    // Re-add original click listeners if button has an ID
-    if (newButton.id === "deleteBtn") {
-      newButton.addEventListener("click", () => {
-        saveState();
-        deleteMode = !deleteMode;
-        if (deleteMode) {
-          insertMode = false;
-          trimMode = false;
-          newButton.classList.add('active-mode');
-          insertBtn.classList.remove('active-mode');
-          trimBtn.classList.remove('active-mode');
-        } else {
-          newButton.classList.remove('active-mode');
-        }
-      });
-    } else if (newButton.id === "insertBtn") {
-      newButton.addEventListener("click", () => {
-        saveState();
-        insertMode = !insertMode;
-        if (insertMode) {
-          deleteMode = false;
-          trimMode = false;
-          newButton.classList.add('active-mode');
-          deleteBtn.classList.remove('active-mode');
-          trimBtn.classList.remove('active-mode');
-        } else {
-          newButton.classList.remove('active-mode');
-        }
-      });
-    } else if (newButton.id === "trimBtn") {
-      newButton.addEventListener("click", () => {
-        saveState();
-        trimMode = !trimMode;
-        if (trimMode) {
-          deleteMode = false;
-          insertMode = false;
-          newButton.classList.add('active-mode');
-          deleteBtn.classList.remove('active-mode');
-          insertBtn.classList.remove('active-mode');
-        } else {
-          newButton.classList.remove('active-mode');
-        }
-      });
-    } else if (newButton.id === "generateBtn") {
-      newButton.addEventListener("click", () => {
-        if (points.length < 1) return;
-        
-        const formattedPoints = points.map(p => ({
-          x: parseFloat(p.x).toFixed(2),
-          y: parseFloat(p.y).toFixed(2),
-          heading: p.heading !== undefined ? parseFloat(p.heading).toFixed(1) : 0
-        }));
-        
-        let code = `chassis.setPose(${formattedPoints[0].x}, ${formattedPoints[0].y}, ${formattedPoints[0].heading});\n`;
-      
-        for (let i = 1; i < formattedPoints.length; i++) {
-          code += `chassis.moveToPose(${formattedPoints[i].x}, ${formattedPoints[i].y}, ${formattedPoints[i].heading}, ${delayInput.value});\n`;
-        }
-        
-        console.log(code);
-        alert(code);
-      });
-    } else if (newButton.id === "closePointInfo") {
-      newButton.addEventListener("click", hidePointInfo);
-    } else if (newButton.id === "insertPointBtn") {
-      newButton.addEventListener("click", () => insertPointAtIndex(selectedPointIndex));
-    } else if (newButton.id === "uploadFieldBtn") {
-      newButton.addEventListener("click", function() {
-        if (document.getElementById("customFieldInput").files && document.getElementById("customFieldInput").files[0]) {
-          const file = document.getElementById("customFieldInput").files[0];
-          const reader = new FileReader();
-          
-          reader.onload = function(e) {
-            loadFieldImage(e.target.result);
-          };
-          
-          reader.readAsDataURL(file);
-        }
-      });
-    }
-  });
-  
-  // Apply to inputs and selects
-  const inputs = document.querySelectorAll('input, select');
-  inputs.forEach(input => {
-    // Skip the theme selector itself
-    if (input.id === "themeSelect") return;
-    
-    input.style.backgroundColor = theme.buttonBg;
-    input.style.color = theme.text;
-    input.style.border = `0.1em solid ${theme.buttonBorder}`;
-    
-    // Add hover effects for selects
-    if (input.tagName === "SELECT") {
-      input.addEventListener("mouseover", function() {
-        this.style.backgroundColor = theme.buttonHover;
-      });
-      
-      input.addEventListener("mouseout", function() {
-        this.style.backgroundColor = theme.buttonBg;
-      });
-    }
-  });
-  
-  // Apply to point information panel
-  const pointInfo = document.getElementById("pointInfo");
-  if (pointInfo) {
-    pointInfo.style.backgroundColor = theme.panelBg;
-    pointInfo.style.color = theme.text;
-    pointInfo.style.border = `1px solid ${theme.panelBorder}`;
-    pointInfo.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.2)";
-  }
-  
-  // Apply to points list
-  const pointListContainer = document.getElementById("pointListContainer");
-  if (pointListContainer) {
-    pointListContainer.style.backgroundColor = theme.pointListBg;
-    pointListContainer.style.color = theme.text;
-    pointListContainer.style.border = `1px solid ${theme.pointListBorder}`;
-  }
-  
-  // Update the drawPoint and drawLinearPath functions to use theme colors
-  updateDrawFunctions(theme);
-  
-  // Apply to point list entries (run on next frame to ensure they exist)
-  setTimeout(() => {
-    const pointEntries = document.querySelectorAll('.point-entry');
-    pointEntries.forEach((entry, index) => {
-      if (selectedPointIndex === index) {
-        entry.style.backgroundColor = theme.pointListSelectedBg;
-        entry.style.border = `1px solid ${theme.text}`;
-      } else {
-        entry.style.backgroundColor = theme.pointListEntryBg;
-        entry.style.border = `1px solid ${theme.pointListBorder}`;
-      }
-      
-      const pointLabel = entry.querySelector('span');
-      if (pointLabel) {
-        pointLabel.style.color = theme.pointListText;
-      }
-      
-      const pointCoords = entry.querySelector('small');
-      if (pointCoords) {
-        pointCoords.style.color = theme.pointListSecondaryText;
-      }
-    });
-  }, 0);
-  
-  // Force a redraw to apply all theme changes
-  redraw();
-}
-
-// Update drawing functions to use theme colors
-function updateDrawFunctions(theme) {
-  // Store original functions
-  const originalDrawPoint = drawPoint;
-  const originalDrawLinearPath = drawLinearPath;
-  
-  // Override drawPoint
-  drawPoint = function(vexX, vexY, radius = 5, color = theme.pointColor, alpha = 1, heading = null, isHighlighted = false) {
-    const { x, y } = vexToCanvas(vexX, vexY);
-    
-    // Draw highlight if point is selected
-    if (isHighlighted) {
-      ctx.beginPath();
-      ctx.arc(x, y, radius + 4, 0, 2 * Math.PI);
-      ctx.fillStyle = theme.pointHighlight;
-      ctx.fill();
-    }
-    
-    // Use theme color if default color is used
-    if (color === "#bcd732" || color === "black") {
-      color = theme.pointColor;
-    }
-    
-    // Draw the circle
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = color;
-    ctx.globalAlpha = alpha;
-    ctx.fill();
-    
-    // Draw the heading indicator if provided
-    if (heading !== null) {
-      // Convert heading to radians (0 degrees points up, increases clockwise)
-      const radians = (90 - heading) * (Math.PI / 180);
-      
-      // Calculate the endpoint of the heading line
-      const lineLength = radius * 1;
-      const endX = x + Math.cos(radians) * lineLength;
-      const endY = y - Math.sin(radians) * lineLength;
-      
-      // Draw the line
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(endX, endY);
-      ctx.strokeStyle = theme.text;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-    
-    ctx.globalAlpha = 1;
-  };
-  
-  // Override drawLinearPath
-  drawLinearPath = function() {
-    if (points.length < 2) return;
-  
-    // Draw the entire path as a single stroke without animation
-    ctx.beginPath();
-    const start = vexToCanvas(points[0].x, points[0].y);
-    ctx.moveTo(start.x, start.y);
-    
-    // Draw all segments in one go
-    for (let i = 1; i < points.length; i++) {
-      const { x, y } = vexToCanvas(points[i].x, points[i].y);
-      ctx.lineTo(x, y);
-    }
-    
-    // Use theme color for the path
-    ctx.strokeStyle = theme.pathColor;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  };
-  
-  // Also update the drawHeadingText function
-  drawHeadingText = function() {
-    ctx.font = "12px Roboto";
-    ctx.fillStyle = theme.text;
-    points.forEach(point => {
-      const { x, y } = vexToCanvas(point.x, point.y);
-      const heading = point.heading !== undefined ? point.heading.toFixed(0) : "0";
-      ctx.fillText(`${heading}°`, x + 10, y - 10);
-    });
-  };
-}
-
-// Watch for system theme changes
-function setupThemeListener() {
-  if (window.matchMedia) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-      const themeMode = document.getElementById("themeSelect").value;
-      if (themeMode === "auto") {
-        applyTheme("auto");
-      }
-    });
-  }
-}
-
-// Initialize theme switcher when DOM is ready
-document.addEventListener("DOMContentLoaded", function() {
-  createThemeSwitcher();
-  setupThemeListener();
-});
-
-// Initialize immediately if DOM is already loaded
-if (document.readyState === "complete" || document.readyState === "interactive") {
-  setTimeout(function() {
-    createThemeSwitcher();
-    setupThemeListener();
-  }, 1);
-}
 
 redraw();

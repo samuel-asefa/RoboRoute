@@ -16,9 +16,12 @@ canvas {
 }
 
 #topbar {
-    margin-top: 0.4em;
+    margin-top: 0.2em;
+    margin-bottom: 0.1em;
     display: flex;
     align-items: left;
+    width: 100%;
+    height: 2.65em;
 }
 
 #topbar div {
@@ -26,17 +29,35 @@ canvas {
     float: left;
 }
 
+#roboroute {
+    margin-top: 0.1em;
+    width: 10.25em;
+    display: flex;  
+    align-items: center;
+}
+
+#titleIcon {
+    height: 2em;
+    margin-left: 0.5em;
+    margin-right: 0.3em;
+}
+
 h1 {
-    margin-left: 0.3em;
-    margin-top: 0.2em;
+    margin: 0;
     font-size: 150%;
     color: white;
+    display: inline-block;
 }
 
 #title {
     color: rgb(255,255,255);
     text-decoration: none;
     transition: 0.25s;
+    padding-left: 0.1em;
+}
+
+#titleIcon {
+    height: 2em;
 }
 
 #title:hover {
@@ -47,6 +68,7 @@ h1 {
 #tools {
     justify-content: center;
     margin-bottom: 10px;
+    width: 100%;
 }
 
 #tools button {
@@ -63,6 +85,10 @@ h1 {
 
 #tools button:hover {
     background-color: #2e2e2e;
+}
+
+#linearBtn {
+    background-color: rgb(25,25,25);
 }
 
 #tools input:focus {
@@ -86,7 +112,7 @@ h1 {
 }
 
 #delayInput {
-    width: 8em; /* Adjust width as needed */
+    width: 8em;
 }
 
 #actions {
@@ -97,13 +123,13 @@ h1 {
 }
 
 .active-mode {
-    background-color: #4CAF50; /* Green background when in insert mode */
-    color: white; /* White text for contrast */
+    background-color: #4CAF50;
+    color: white;
     transition: background-color 0.3s ease;
 }
 
 .active-mode:hover {
-    background-color: #45a049; /* Slightly darker green on hover */
+    background-color: #45a049;
 }
 
 .point-entry.drag-over {
@@ -125,4 +151,11 @@ h1 {
 
 #pointInfo h4 {
     margin: 0;
+}
+
+#actions {
+    display: absolute;
+    align-items: center;
+    top: 0;
+    right: 500px;
 }
