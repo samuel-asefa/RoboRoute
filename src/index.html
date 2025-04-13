@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboRoute</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image" href="../assets/roboroute/favicon.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mona+Sans:ital,wght@0,200..900;1,200..900&family=Noto+Sans:wght@300;400;500;600;700;800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="topbar">
+    <div id="tools">
+      <div id="roboroute">
+        <img src="../assets/roboroute/favicon.jpg" id="titleIcon">
+      <h1><a href="https://roboroute.netlify.app/" id="title">RoboRoute</a></h1>
+      </div>
+      <button id="linearBtn">Linear Path</button>
+      <button id="bezierBtn">Bezier Curve</button>
+      <button id="insertBtn">Insert</button>
+      <button id="deleteBtn">Delete</button>
+      <button id="trimBtn">Trim</button>
+      <button id="clearBtn">Clear</button>
+      <button id="generateBtn">Generate</button>
+      <input id="delayInput" type="number" placeholder="Delay (ms)">
+    </div>
+  </div>
+  
+  <canvas id="pathCanvas" width="800" height="800"></canvas>
+  
+  <div id="actions">
+    <input id="delayInput" type="number" placeholder="Field Size">
+    <h4>Actions</h4>
+    <input id="nameInput" type="text" placeholder="Enter Action Name">
+    <input id="codeInput" type="text" placeholder="Enter Code">
+
+    <button id="save">Save</button>
+  </div>
+
+  <div id="pointInfo">
+    <h4>Point Info</h4>
+    <p><strong>X:</strong> <span id="pointX">0</span></p>
+    <p><strong>Y:</strong> <span id="pointY">0</span></p>
+    <button id="insertPointBtn">Insert Point</button>
+    <button id="closePointInfo">Close</button>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
