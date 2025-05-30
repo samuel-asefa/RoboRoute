@@ -1,39 +1,52 @@
 body {
-    font-family: 'Roboto';
+    font-family: 'Roboto', sans-serif; 
     top: 0;
     left: 0;
     margin: 0;
     padding: 0;
-    display: relative;
     color: white;
     background-color: rgb(25, 25, 25);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    min-height: 100vh;
+    overflow-x: hidden; 
 }
 
 canvas {
-    margin-left: 0.4em;
+    margin-top: 10px; 
     border: 2px solid white;
     cursor: crosshair;
+    background-color: #333; 
 }
 
 #topbar {
     margin-top: 0.2em;
     margin-bottom: 0.1em;
     display: flex;
-    align-items: left;
+    align-items: center; 
+    justify-content: center; 
     width: 100%;
-    height: 2.65em;
+    height: auto; 
+    padding: 5px 0;
+    flex-wrap: wrap; 
 }
 
-#topbar div {
-    margin-right: 0.75em;
-    float: left;
+#topbar div#tools { 
+    margin-right: 0; 
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    flex-wrap: wrap;
 }
+
 
 #roboroute {
     margin-top: 0.1em;
-    width: 10.25em;
+    width: auto; 
     display: flex;  
     align-items: center;
+    margin-right: 15px; 
 }
 
 #titleIcon {
@@ -56,80 +69,119 @@ h1 {
     padding-left: 0.1em;
 }
 
-#titleIcon {
-    height: 2em;
-}
-
 #title:hover {
     color: rgb(222,222,222);
-    text-decoration: none;
 }
 
 #tools {
-    justify-content: center;
-    margin-bottom: 10px;
-    width: 100%;
+    width: auto; 
 }
 
-#tools button {
-    margin-top: 0.4em;
-    padding: 0.2em 0.6em;
-    font-size: 16px;
+#tools button, #tools select, #tools input { 
+    margin: 0.4em 0.2em; 
+    padding: 0.4em 0.8em; 
+    font-size: 15px; 
     font-weight: 500;
     cursor: pointer;
-    background-color: rgb(25,25,25);
-    border: 0.1em solid rgb(50,50,50);
+    background-color: rgb(45,45,45); 
+    border: 1px solid rgb(70,70,70); 
     color: white;
-    transition: 0.25s;
+    transition: background-color 0.2s ease, border-color 0.2s ease; 
+    border-radius: 4px; 
 }
 
-#tools button:hover {
-    background-color: #2e2e2e;
-}
-
-#linearBtn {
-    background-color: rgb(25,25,25);
+#tools button:hover, #tools select:hover, #tools input:hover {
+    background-color: #3a3a3a; 
+    border-color: #666;
 }
 
 #tools input:focus {
-    width: 9em;
     outline: none;
-}
-
-#tools input {
-    padding: 0.2em 0.6em;
-    width: 9em;
-    font-size: 16px;
-    font-weight: 500;
-    background-color: rgb(25,25,25);
-    border: 0.1em solid rgb(50,50,50);
-    color: white;
-    transition: 0.25s;
-}
-
-#tools input:hover {
-    background-color: #2e2e2e;
+    border-color: #bcd732; 
+    background-color: #3f3f3f;
 }
 
 #delayInput {
-    width: 8em;
+    width: 10em; 
 }
 
-#actions {
-    display: none;
-    position: absolute;
-    top: 250px;
-    right: 250px;
+/* Panel Styles (for PointInfo and ActionsPanel) */
+#pointInfo, #actionsPanel {
+    display: none; 
+    position: absolute; 
+    background-color: rgb(35,35,35); 
+    border: 1px solid rgb(70,70,70);
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    color: #f0f0f0;
+    width: 280px; 
+    font-size: 14px;
+    z-index: 20; /* Ensure panels are above point list */
 }
+
+#pointInfo {
+    top: 70px; 
+    right: 20px; 
+}
+
+#actionsPanel {
+    top: 320px; /* Position below pointInfo or adjust as needed */
+    right: 20px;
+}
+
+
+#pointInfo h4, #actionsPanel h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #bcd732; 
+    border-bottom: 1px solid rgb(70,70,70);
+    padding-bottom: 5px;
+}
+
+#pointInfo p, #actionsPanel p {
+    margin: 8px 0;
+}
+#pointInfo input[type="number"], #actionsPanel input[type="text"], #actionsPanel input[type="number"] {
+    width: calc(100% - 12px); 
+    padding: 6px;
+    margin-bottom: 10px;
+    background-color: rgb(45,45,45);
+    border: 1px solid rgb(70,70,70);
+    color: white;
+    border-radius: 3px;
+}
+#pointInfo button, #actionsPanel button {
+    padding: 8px 12px;
+    font-size: 13px;
+    margin-top: 5px;
+    margin-right: 5px;
+    background-color: #4CAF50; 
+    border: none;
+    border-radius: 4px; /* Match other buttons */
+    color: white; /* Ensure text is white */
+    cursor: pointer;
+}
+#pointInfo button:hover, #actionsPanel button:hover {
+    background-color: #45a049;
+}
+#closePointInfo, #deleteSelectedPointBtn {
+    background-color: #f44336; 
+}
+#closePointInfo:hover, #deleteSelectedPointBtn:hover {
+    background-color: #d32f2f;
+}
+
 
 .active-mode {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #bcd732 !important; 
+    color: black !important;
+    border-color: #a8bb2d !important;
     transition: background-color 0.3s ease;
 }
 
 .active-mode:hover {
-    background-color: #45a049;
+    background-color: #a8bb2d !important;
 }
 
 .point-entry.drag-over {
@@ -137,25 +189,131 @@ h1 {
     border: 1px dashed #999 !important;
 }
 
-#pointInfo {
-    display: none;
+/* Point List Container Style */
+#pointListContainer {
+    z-index: 10; 
+    color: #f0f0f0; 
     position: absolute;
-    top: 50px;
-    right: 250px;
-    background-color: rgb(25,25,25);
-    border: 1px solid white;
-    border-radius: 5px;
+    top: 70px; 
+    left: 20px; 
+    width: 220px;
+    max-height: calc(100vh - 100px); 
+    overflow-y: auto;
+    background-color: #222222;
+    border: 1px solid #121212;
     padding: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
-#pointInfo h4 {
-    margin: 0;
+#pointListHeader {
+    color: #bcd732; 
+    margin: 0 0 10px 0;
 }
-
-#actions {
-    display: absolute;
+.point-entry {
+    border: 1px solid #444 !important; 
+    padding: 5px;
+    margin: 2px 0;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+}
+.point-entry:hover {
+    background-color: #383838 !important;
+}
+.point-entry.selected { 
+    background-color: #333333 !important;
+    border: 1px solid #bcd732 !important;
+}
+
+#pointActionsList {
+    margin-top: 5px;
+    padding: 5px;
+    background-color: rgb(45,45,45);
+    border-radius: 3px;
+    min-height: 40px;
+    font-size: 0.9em;
+}
+#pointActionsList .action-item {
+    padding: 3px;
+    border-bottom: 1px solid rgb(60,60,60);
+}
+#pointActionsList .action-item:last-child {
+    border-bottom: none;
+}
+
+/* Modal Styling */
+.modal-overlay {
+    position: fixed;
+    left: 0;
     top: 0;
-    right: 500px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.75); /* Darker overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-dialog {
+    background: rgb(45,45,45); /* Match tool button background */
+    padding: 25px;
+    border-radius: 8px;
+    color: white;
+    border: 1px solid rgb(70,70,70); /* Match tool button border */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    min-width: 400px; /* Ensure decent width */
+    max-width: 600px;
+}
+
+.modal-dialog h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #bcd732; /* Accent color */
+    border-bottom: 1px solid rgb(70,70,70);
+    padding-bottom: 10px;
+}
+
+.modal-dialog textarea {
+    width: calc(100% - 20px); /* Full width with padding */
+    height: 250px; /* Decent height for code */
+    margin-bottom: 15px;
+    background-color: rgb(30,30,30); /* Darker textarea */
+    color: #f0f0f0;
+    border: 1px solid rgb(70,70,70);
+    border-radius: 4px;
+    padding: 10px;
+    font-family: 'Courier New', Courier, monospace; /* Monospace for code */
+    font-size: 14px;
+    resize: vertical; /* Allow vertical resize */
+}
+
+.modal-dialog button {
+    padding: 0.5em 1em; /* Consistent padding */
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: rgb(65,65,65); /* Slightly lighter for modal buttons */
+    border: 1px solid rgb(90,90,90);
+    color: white;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+.modal-dialog button:last-child {
+    margin-right: 0;
+}
+
+.modal-dialog button:hover {
+    background-color: #5a5a5a;
+    border-color: #888;
+}
+
+.modal-dialog button.primary-action { /* For main action like "Copy" or "Import" */
+    background-color: #4CAF50; /* Green */
+}
+.modal-dialog button.primary-action:hover {
+    background-color: #45a049;
 }

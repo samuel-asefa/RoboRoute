@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboRoute</title>
+    <title>RoboRoute Revolution</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image" href="../assets/roboroute/favicon.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,32 +18,37 @@
       <h1><a href="https://roboroute.netlify.app/" id="title">RoboRoute</a></h1>
       </div>
       <button id="linearBtn">Linear Path</button>
-      <button id="bezierBtn">Bezier Curve</button>
       <button id="insertBtn">Insert</button>
       <button id="deleteBtn">Delete</button>
       <button id="trimBtn">Trim</button>
       <button id="clearBtn">Clear</button>
       <button id="generateBtn">Generate</button>
-      <input id="delayInput" type="number" placeholder="Delay (ms)">
-    </div>
+      <input id="delayInput" type="number" placeholder="Cmd Delay (ms)" value="1000">
+      <button id="savePathBtn">Save Path</button>
+      <button id="loadPathBtn">Load Path</button>
+      <input type="file" id="loadPathInput" accept=".json" style="display:none;">
+      </div>
   </div>
   
   <canvas id="pathCanvas" width="800" height="800"></canvas>
   
-  <div id="actions">
-    <input id="delayInput" type="number" placeholder="Field Size">
-    <h4>Actions</h4>
-    <input id="nameInput" type="text" placeholder="Enter Action Name">
-    <input id="codeInput" type="text" placeholder="Enter Code">
-
-    <button id="save">Save</button>
+  <div id="actionsPanel"> 
+    <h4>Path Actions & Info</h4>
+    <div id="pathSummary"></div>
+    <hr>
+    <h4>Point Actions</h4>
+    <div id="pointActionsList">No point selected or point has no actions.</div>
+    <input id="actionNameInput" type="text" placeholder="Enter Action Name (e.g., intake)">
+    <input id="actionValueInput" type="text" placeholder="Enter Action Value (e.g., on/off, 500ms)">
+    <button id="addPointActionBtn">Add Action to Point</button>
   </div>
 
   <div id="pointInfo">
     <h4>Point Info</h4>
     <p><strong>X:</strong> <span id="pointX">0</span></p>
     <p><strong>Y:</strong> <span id="pointY">0</span></p>
-    <button id="insertPointBtn">Insert Point</button>
+    <button id="insertPointBtn">Insert Midpoint</button> 
+    <button id="deleteSelectedPointBtn">Delete Selected Point</button> 
     <button id="closePointInfo">Close</button>
   </div>
 
