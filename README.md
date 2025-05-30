@@ -3,14 +3,26 @@
 RoboRoute is a tool to help with planning autnomous coding paths such as Auton during matches and Progragramming Skills. It is still in development so more features and functionalities will be added in the near future!
 
 ## ⚙️ Features
-```Linear Path``` - Creates points for a linear autonomous path <br>
-```Bezier Curve``` - Implementation not added yet <br>
-```Insert``` - Inserts a point between points on the current path <br>
-```Delete``` - Deletes a point on the path <br>
-```Trim``` - Clears path up to the point selected <br>
-```Clear``` - Clears the existing path <br>
-```Generate``` - Generates LemLib moveToPose code for the path. The input can be used for a max<br>
-- Ability to choose between skills and match fields.
+Linear Path Support
+Create both straight movement paths for more realistic autonomous motion.
+
+Interactive Editor
+
+Insert new path points.
+
+Right-click to add Bézier handles for curved segments.
+
+Delete, trim, or clear segments as needed.
+
+Scroll to dynamically adjust robot heading.
+
+Realistic Field Simulation
+Accurately replicates the 2024-25 VEX Robotics game High Stakes with full game elements.
+
+Match Configuration Selector
+Switch between match scenarios to plan different autonomous strategies.
+
+Path Code Generation
+Generate robot path instructions for use in autonomous code.
 
 ## 📏 Point List
-UI to configure the selected points position and heading.
