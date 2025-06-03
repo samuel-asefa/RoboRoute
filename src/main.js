@@ -993,7 +993,7 @@ document.addEventListener("keydown", (event) => {
 // Field Selector
 
 let currentFieldImage = new Image();
-currentFieldImage.src = "../assets/fields/push-back-matches.png"; // Default image
+currentFieldImage.src = "../assets/fields/push-back-skills.png"; // Default image
 let backgroundLoaded = false;
 
 function addFieldSelector() {
@@ -1024,7 +1024,6 @@ function addFieldSelector() {
   });
   
   const presetFields = [
-    { value: "../assets/fields/push-back-matches.png", text: "Push Back (Matches)" },
     { value: "../assets/fields/push-back-skills.png", text: "Push Back (Skills)" },
     { value: "../assets/fields/high-stakes-matches.png", text: "High Stakes (Matches)" },
     { value: "../assets/fields/high-stakes-skills.png", text: "High Stakes (Skills)" },
@@ -1139,7 +1138,7 @@ function loadFieldImage(src) {
   currentFieldImage.onerror = function() {
     console.error("Failed to load field image:", src);
     // Revert to default if loading fails
-    currentFieldImage.src = "../assets/fields/push-back-matches.png";
+    currentFieldImage.src = "../assets/fields/push-back-skills.png";
   };
   
   currentFieldImage.src = src;
@@ -1218,7 +1217,7 @@ function initializeFieldSelector() {
   
   // Set initial state
   backgroundLoaded = false;
-  loadFieldImage("../assets/fields/push-back-matches.png");
+  loadFieldImage("../assets/fields/push-back-skills.png");
 }
 
 // Call this function when the page loads
