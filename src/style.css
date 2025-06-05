@@ -1,39 +1,51 @@
+/* RoboRoute Base Styles */
 body {
-    font-family: 'Roboto';
+    font-family: 'Roboto', Arial, sans-serif; /* Added Arial as fallback */
     top: 0;
     left: 0;
     margin: 0;
-    padding: 0;
-    display: relative;
+    padding: 0; /* Changed from 20px to 0 for VexPlan compatibility */
+    display: flex; /* Changed from relative to flex for layout */
+    flex-direction: column; /* Main layout direction */
+    align-items: center; /* Center content */
     color: white;
-    background-color: rgb(25, 25, 25);
+    background-color: rgb(25, 25, 25); /* RoboRoute's dark theme */
 }
 
-canvas {
-    margin-left: 0.4em;
+/* RoboRoute Canvas (used as VexPlan field-canvas) */
+#pathCanvas {
+    /* margin-left: 0.4em; */ /* Adjusted by main-display-container */
     border: 2px solid white;
     cursor: crosshair;
+    position: absolute; /* For layering with drawing-canvas */
+    top: 0;
+    left: 0;
+    z-index: 0;
 }
 
 #topbar {
     margin-top: 0.2em;
     margin-bottom: 0.1em;
     display: flex;
-    align-items: left;
+    align-items: center; /* Corrected from left */
     width: 100%;
     height: 2.65em;
+    justify-content: center; /* Center tools within topbar */
+    background-color: rgb(20,20,20); /* Slightly different for distinction */
+    padding: 5px 0;
 }
 
-#topbar div {
+#topbar div#tools { /* More specific selector */
     margin-right: 0.75em;
-    float: left;
+    /* float: left; */ /* Avoid float for flex layouts */
 }
 
 #roboroute {
     margin-top: 0.1em;
-    width: 10.25em;
-    display: flex;  
+    width: auto; /* Adjusted from fixed width */
+    display: flex;
     align-items: center;
+    margin-right: 15px; /* Spacing */
 }
 
 #titleIcon {
@@ -42,7 +54,7 @@ canvas {
     margin-right: 0.3em;
 }
 
-h1 {
+h1 { /* General H1, VexPlan specific H1 is handled below */
     margin: 0;
     font-size: 150%;
     color: white;
@@ -56,19 +68,17 @@ h1 {
     padding-left: 0.1em;
 }
 
-#titleIcon {
-    height: 2em;
-}
-
 #title:hover {
     color: rgb(222,222,222);
     text-decoration: none;
 }
 
 #tools {
+    display: flex; /* Ensure tools are in a row */
+    align-items: center; /* Align items vertically */
     justify-content: center;
     margin-bottom: 10px;
-    width: 100%;
+    /* width: 100%; */ /* Already on #topbar */
 }
 
 #tools button {
@@ -77,34 +87,32 @@ h1 {
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    background-color: rgb(25,25,25);
+    background-color: rgb(35,35,35); /* Darker buttons */
     border: 0.1em solid rgb(50,50,50);
     color: white;
     transition: 0.25s;
+    margin-left: 5px; /* Spacing between buttons */
 }
 
 #tools button:hover {
     background-color: #2e2e2e;
 }
 
-#linearBtn {
-    background-color: rgb(25,25,25);
-}
-
 #tools input:focus {
-    width: 9em;
+    /* width: 9em; */ /* Let it be natural or controlled by #delayInput */
     outline: none;
 }
 
 #tools input {
     padding: 0.2em 0.6em;
-    width: 9em;
+    /* width: 9em; */ /* Let it be natural or controlled by #delayInput */
     font-size: 16px;
     font-weight: 500;
-    background-color: rgb(25,25,25);
+    background-color: rgb(35,35,35);
     border: 0.1em solid rgb(50,50,50);
     color: white;
     transition: 0.25s;
+    margin-left: 5px; /* Spacing */
 }
 
 #tools input:hover {
@@ -115,47 +123,331 @@ h1 {
     width: 8em;
 }
 
-#actions {
-    display: none;
+#actions { /* RoboRoute specific actions panel */
+    display: none; /* Initially hidden */
     position: absolute;
-    top: 250px;
-    right: 250px;
+    top: 100px; /* Example positioning, adjust as needed */
+    right: 20px;
+    background-color: rgb(30,30,30);
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    z-index: 10;
 }
 
-.active-mode {
-    background-color: #4CAF50;
+.active-mode { /* For RoboRoute path tool buttons */
+    background-color: #4CAF50 !important; /* Ensure override */
     color: white;
     transition: background-color 0.3s ease;
 }
 
 .active-mode:hover {
-    background-color: #45a049;
+    background-color: #45a049 !important;
 }
 
-.point-entry.drag-over {
-    background-color: #e0e0e0 !important;
-    border: 1px dashed #999 !important;
+/* RoboRoute Point List (dynamically created) */
+#pointListContainer {
+    position: absolute;
+    top: 70px; /* Adjust as needed */
+    right: 20px;
+    width: 220px;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: #222222;
+    border: 1px solid #121212;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 10; /* Ensure it's above canvas */
+    color: white;
+}
+#pointListContainer h3 {
+    margin: 0 0 10px 0;
+    color: white;
+}
+.point-entry {
+    padding: 5px;
+    margin: 2px 0;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #282828;
+    border: 1px solid #383838;
+    color: white;
+}
+.point-entry:hover {
+    background-color: #303030;
+}
+.point-entry.selected {
+    background-color: #333333;
+    border: 1px solid white;
+}
+.point-entry small {
+    color: #aaa;
 }
 
-#pointInfo {
+
+#pointInfo { /* RoboRoute point info panel */
     display: none;
     position: absolute;
-    top: 50px;
-    right: 250px;
+    top: 70px; /* Adjust as needed */
+    right: 260px; /* Adjust relative to pointListContainer */
     background-color: rgb(25,25,25);
     border: 1px solid white;
     border-radius: 5px;
-    padding: 10px;
+    padding: 15px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    width: 250px; /* Give it a defined width */
 }
 
 #pointInfo h4 {
-    margin: 0;
+    margin: 0 0 10px 0;
+    color: white;
+}
+#pointInfo p {
+    margin: 8px 0;
+    color: white;
+}
+#pointInfo input[type="number"] {
+    width: 80px;
+    padding: 5px;
+    background-color: #333;
+    border: 1px solid #555;
+    color: white;
+    margin-left: 5px;
+}
+#pointInfo button {
+    padding: 8px 12px;
+    margin-top: 10px;
+    background-color: #307833;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+#pointInfo button:hover {
+    background-color: #45a049;
+}
+#closePointInfo {
+    background-color: #752f2f;
+}
+#closePointInfo:hover {
+    background-color: #a04545;
 }
 
-#actions {
-    display: absolute;
-    align-items: center;
+/* VEXPLAN STYLES START HERE */
+/* (Extracted from VexPlan's <style> tag and merged) */
+
+/* General VexPlan elements, adjust for RoboRoute's dark theme */
+#vexplan-title { /* Assuming you might add a title for VexPlan section */
+    font-size: 28px; /* Was 36px */
+    color: #67b8de; /* Adjusted blue */
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.credits { /* VexPlan credits */
+    color: #cccccc; /* Lighter gray for dark theme */
+    font-size: 14px; /* Was 16px */
+    margin: 3px 0;
+    text-align: center;
+}
+.credits a {
+    color: #67b8de;
+    text-decoration: none;
+}
+.credits a:hover {
+    text-decoration: underline;
+}
+
+.main-display-container { /* Container for canvas and side panels */
+    display: flex;
+    flex-direction: row;
+    gap: 15px; /* Was 20px */
+    align-items: flex-start;
+    padding: 15px; /* Add some padding around the main content area */
+    width: 100%;
+    justify-content: center;
+}
+
+#game-container { /* VexPlan game container */
+    position: relative;
+    width: 800px; /* Match RoboRoute canvas */
+    height: 800px; /* Match RoboRoute canvas */
+    background-color: #444444; /* Darker background for field if needed */
+    border: 2px solid #506070; /* Adjusted border */
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+#drawing-canvas { /* VexPlan drawing canvas */
+    position: absolute;
     top: 0;
-    right: 500px;
+    left: 0;
+    z-index: 1; /* Above pathCanvas/field-canvas */
+    pointer-events: none; /* Initially no pointer events */
+}
+#drawing-canvas.drawing-active {
+    pointer-events: auto; /* Enable when drawing */
+}
+
+/* Common styles for VexPlan side panels */
+#vexplan-score-display, #vexplan-drawing-tools {
+    width: 260px; /* Was 250px */
+    background-color: #2a3845; /* Darker panel background */
+    color: white;
+    padding: 15px; /* Was 20px */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Was 15px */
+}
+
+#vexplan-score-display h2, #vexplan-drawing-tools h2 {
+    margin: 0 0 8px 0; /* Was 10px */
+    font-size: 18px; /* Was 20px */
+    border-bottom: 1px solid #6a7b8c; /* Adjusted border */
+    padding-bottom: 4px; /* Was 5px */
+}
+
+#vexplan-score-display p, #vexplan-drawing-tools p {
+    margin: 4px 0; /* Was 5px */
+    font-size: 14px; /* Was 16px */
+}
+
+#vexplan-score-display button, #vexplan-score-display select, #vexplan-score-display input,
+#vexplan-drawing-tools button, #vexplan-drawing-tools select {
+    width: 100%;
+    padding: 8px; /* Was 10px */
+    margin: 4px 0; /* Was 5px */
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    box-sizing: border-box; /* Add this */
+}
+
+#vexplan-score-display button, #vexplan-drawing-tools button {
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+}
+#vexplan-score-display button:hover, #vexplan-drawing-tools button:hover {
+    background-color: #2980b9;
+}
+
+#vexplan-score-display select, #vexplan-drawing-tools select {
+    background-color: #7f8c8d;
+    color: white;
+    cursor: pointer;
+}
+#vexplan-score-display select:hover, #vexplan-drawing-tools select:hover {
+    background-color: #6a737b;
+}
+
+#vexplan-score-display input { /* For team numbers */
+    background-color: #dddddd; /* Lighter input background */
+    color: black;
+    cursor: text;
+}
+#vexplan-score-display input::placeholder {
+    color: #7f8c8d;
+}
+
+#context-menu { /* VexPlan context menu */
+    position: absolute;
+    background-color: #ffffff;
+    border: 1px solid #34495e;
+    padding: 5px;
+    display: none;
+    z-index: 30; /* Ensure it's above drawing canvas */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #333; /* Text color for context menu */
+}
+#context-menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+#context-menu li {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+#context-menu li:hover {
+    background-color: #ecf0f1;
+}
+
+#tutorial-modal { /* VexPlan tutorial */
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+    z-index: 40; /* Highest z-index */
+    justify-content: center;
+    align-items: center;
+}
+#tutorial-content {
+    background-color: #f0f0f0; /* Light background for tutorial content */
+    color: #333; /* Dark text for tutorial */
+    width: 600px;
+    max-height: 80vh;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+#tutorial-content h2 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+#tutorial-content p, #tutorial-content ul, #tutorial-content ol {
+    line-height: 1.6;
+    color: #34495e;
+}
+#tutorial-content ul, #tutorial-content ol {
+    padding-left: 20px;
+}
+#tutorial-content button { /* Close button for tutorial */
+    padding: 10px 20px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 15px; /* Spacing for the close button */
+}
+#tutorial-content button:hover {
+    background-color: #c0392b;
+}
+
+/* RoboRoute Field Selector (dynamically added to #tools) specific styles if needed */
+#fieldSelect {
+    margin-left: 10px; /* Spacing for the field selector */
+    padding: 0.2em 0.6em;
+    font-size: 16px;
+    font-weight: 500;
+    background-color: rgb(35,35,35);
+    border: 0.1em solid rgb(50,50,50);
+    color: white;
+    transition: 0.25s;
+}
+#fieldSelect:hover {
+    background-color: #2e2e2e;
+}
+#customFieldInput {
+    display: none; /* Initially hidden */
+    margin-left: 5px;
+}
+#uploadFieldBtn {
+    display: none; /* Initially hidden */
+    margin-left: 5px;
 }

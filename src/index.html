@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboRoute</title>
+    <title>RoboRoute-VexPlan</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image" href="../assets/roboroute/favicon.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,36 +15,135 @@
     <div id="tools">
       <div id="roboroute">
         <img src="../assets/roboroute/favicon.jpg" id="titleIcon">
-      <h1><a href="https://roboroute.netlify.app/" id="title">RoboRoute</a></h1>
+        <h1><a href="https://roboroute.netlify.app/" id="title">RoboRoute</a></h1>
       </div>
       <button id="linearBtn">Linear Path</button>
-      <button id="bezierBtn">Bezier Curve</button>
-      <button id="insertBtn">Insert</button>
-      <button id="deleteBtn">Delete</button>
-      <button id="trimBtn">Trim</button>
-      <button id="clearBtn">Clear</button>
-      <button id="generateBtn">Generate</button>
-      <input id="delayInput" type="number" placeholder="Delay (ms)">
-    </div>
+      <button id="insertBtn">Insert Point (Path)</button>
+      <button id="deleteBtn">Delete Point (Path)</button>
+      <button id="trimBtn">Trim Path</button>
+      <button id="clearBtn">Clear Path</button>
+      <button id="generateBtn">Generate Code</button>
+      <input id="delayInput" type="number" placeholder="Delay (ms)" value="1000">
+      </div>
   </div>
-  
-  <canvas id="pathCanvas" width="800" height="800"></canvas>
-  
-  <div id="actions">
-    <input id="delayInput" type="number" placeholder="Field Size">
-    <h4>Actions</h4>
-    <input id="nameInput" type="text" placeholder="Enter Action Name">
-    <input id="codeInput" type="text" placeholder="Enter Code">
 
-    <button id="save">Save</button>
+  <div class="main-display-container">
+    <div id="vexplan-drawing-tools">
+        <h2>Drawing Tools</h2>
+        <button id="toggle-drawing">Toggle Drawing Mode</button>
+        <select id="drawing-color">
+            <option value="black">Black</option>
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+        </select>
+        <select id="drawing-size">
+            <option value="2">Small (2px)</option>
+            <option value="5">Medium (5px)</option>
+            <option value="10">Large (10px)</option>
+            <option value="15">Extra Large (15px)</option>
+            <option value="30">Max (30px)</option>
+        </select>
+        <select id="drawing-shape">
+            <option value="normal">Normal</option>
+            <option value="square">Square</option>
+            <option value="arrow">Arrow</option>
+        </select>
+        <button id="erase-tool">Erase</button>
+        <button id="clear-drawing">Clear Drawing</button>
+    </div>
+
+    <div id="game-container">
+        <canvas id="pathCanvas" width="800" height="800"></canvas> <canvas id="drawing-canvas" width="800" height="800"></canvas> <div id="context-menu"> <ul></ul>
+        </div>
+    </div>
+
+    <div id="vexplan-score-display">
+        <h2>Scoreboard</h2>
+        <p>Red: <span id="red-score">0</span></p>
+        <p>Blue: <span id="blue-score">0</span></p>
+        <h2>Team Numbers</h2>
+        <p>Red Robot 1: <input id="red-team-1" type="text" placeholder="Enter team number"></p>
+        <p>Red Robot 2: <input id="red-team-2" type="text" placeholder="Enter team number"></p>
+        <p>Blue Robot 1: <input id="blue-team-1" type="text" placeholder="Enter team number"></p>
+        <p>Blue Robot 2: <input id="blue-team-2" type="text" placeholder="Enter team number"></p>
+        <h2>Ring Management</h2>
+        <p>Selected: <span id="selected-object-info">None</span></p>
+        <p>Rings: <span id="ring-count-info">0</span> (<span id="ring-list-info">None</span>)</p>
+        <button id="add-red-ring">Add Red Ring</button>
+        <button id="add-blue-ring">Add Blue Ring</button>
+        <button id="remove-ring">Remove Ring</button>
+        <h2>Controls</h2>
+        <button id="reset-simulation-button">Reset Simulation</button>
+        <button id="show-tutorial">Show Tutorial</button>
+    </div>
   </div>
 
   <div id="pointInfo">
     <h4>Point Info</h4>
-    <p><strong>X:</strong> <span id="pointX">0</span></p>
-    <p><strong>Y:</strong> <span id="pointY">0</span></p>
-    <button id="insertPointBtn">Insert Point</button>
+    <p><strong>X:</strong> <span id="pointXSpan">0</span></p> <p><strong>Y:</strong> <span id="pointYSpan">0</span></p> <hr>
+    <button id="insertPointBtn">Insert Midpoint</button>
     <button id="closePointInfo">Close</button>
+  </div>
+
+  <div id="actions" style="display:none;">
+    <h4>Actions</h4>
+    <input id="nameInput" type="text" placeholder="Enter Action Name">
+    <input id="codeInput" type="text" placeholder="Enter Code">
+    <button id="save">Save</button>
+  </div>
+
+  <div id="tutorial-modal">
+      <div id="tutorial-content">
+          <h2>VexPlan Tutorial - V5RC High Stakes</h2>
+          <p><strong>Objective:</strong> In V5RC High Stakes, two alliances (Red and Blue) compete to score points by placing colored rings (red or blue) on stakes and mobile goals, climbing the central ladder, or hanging from the ladder or stakes. The goal is to maximize your alliance's score while minimizing the opponent's.</p>
+          <p><strong>Game Elements:</strong></p>
+          <ul>
+              <li><strong>Robots:</strong> Red and blue squares represent robots (two per alliance). You can rename them with team numbers in the "Team Numbers" section.</li>
+              <li><strong>Mobile Goals:</strong> Orange hexagons that can hold up to 6 rings.</li>
+              <li><strong>Stakes:</strong>
+                  <ul>
+                      <li>Red/Blue Alliance Stakes (on the left/right walls): Only score for matching ring colors.</li>
+                      <li>Black Neutral Stakes (top/bottom walls): Score for any ring color.</li>
+                      <li>Yellow High Stake (center): Scores 6 points for the ring's alliance.</li>
+                  </ul>
+              </li>
+              <li><strong>Ladder:</strong> Pink diamond in the center where robots can climb or hang for bonus points.</li>
+              <li><strong>Corners:</strong> Green triangles in the corners:
+                  <ul>
+                      <li>Positive Corners (bottom-left, bottom-right): Double points for mobile goals.</li>
+                      <li>Negative Corners (top-left, top-right): Subtract points (minimum 0).</li>
+                  </ul>
+              </li>
+          </ul>
+          <p><strong>How to Use VexPlan:</strong></p>
+          <ol>
+              <li><strong>Rename Robots:</strong> In the "Team Numbers" section on the right, type a team number for each robot to label them (e.g., "123A"). The team number will appear on the robot square.</li>
+              <li><strong>Drag Robots and Mobile Goals:</strong> Click and drag robots (red/blue squares) or mobile goals (orange hexagons) to move them around the field.</li>
+              <li><strong>Add/Remove Rings:</strong> Left-click a stake or mobile goal to select it. In the "Ring Management" section, use the buttons to add a red ring, add a blue ring, or remove the top ring.</li>
+              <li><strong>Climb the Ladder:</strong> Move a robot onto the ladder (pink diamond), then right-click to set a climb level (1-3) for bonus points.</li>
+              <li><strong>Hang from Ladder or Stakes:</strong> Right-click a robot to set it to hang from the ladder or a nearby stake. Hanging scores additional points but cannot be combined with climbing.</li>
+              <li><strong>Draw Plans:</strong> In the "Drawing Tools" section on the left, click "Toggle Drawing Mode," select a color, size, and shape (Normal, Square, Arrow), and draw on the field to plan strategies. "Normal" draws freehand lines, "Square" draws a rectangle, and "Arrow" draws a line with an arrowhead. Use "Erase" to remove specific lines or "Clear Drawing" to erase everything.</li>
+              <li><strong>Reset:</strong> Click "Reset" in the right panel to return all elements to their starting positions. Team numbers will persist after a reset.</li>
+          </ol>
+          <p><strong>Scoring:</strong></p>
+          <ul>
+              <li><strong>Alliance Stakes:</strong> 1 point per matching ring, +2 if the top ring matches.</li>
+              <li><strong>Neutral Stakes:</strong> 1 point per ring, +2 for the top ring's alliance.</li>
+              <li><strong>High Stake:</strong> 6 points for the ring's alliance.</li>
+              <li><strong>Mobile Goals:</strong> 1 point per ring, +2 for the top ring's alliance, modified by corner effects.</li>
+              <li><strong>Climbing:</strong> 3/6/12 points for levels 1/2/3, +2 if a ring is on the high stake.</li>
+              <li><strong>Hanging:</strong>
+                  <ul>
+                      <li>Ladder: 5 points per robot.</li>
+                      <li>Alliance Stakes: 4 points if the robot's alliance matches the stake, 2 points otherwise.</li>
+                      <li>Neutral Stakes: 3 points per robot.</li>
+                      <li>Bonus: +1 point if hanging from a stake with at least one ring.</li>
+                  </ul>
+              </li>
+          </ul>
+          <button id="close-tutorial">Close</button>
+      </div>
   </div>
 
   <script src="main.js"></script>
