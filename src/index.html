@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboRoute-VexPlan</title>
+    <title>RoboRoute - VEX Path Planning Tool</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image" href="../assets/roboroute/favicon.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,141 +11,256 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mona+Sans:ital,wght@0,200..900;1,200..900&family=Noto+Sans:wght@300;400;500;600;700;800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="topbar">
-    <div id="tools">
-      <div id="roboroute">
-        <img src="../assets/roboroute/favicon.jpg" id="titleIcon">
-        <h1><a href="https://roboroute.netlify.app/" id="title">RoboRoute</a></h1>
-      </div>
-      <button id="linearBtn">Linear Path</button>
-      <button id="insertBtn">Insert Point (Path)</button>
-      <button id="deleteBtn">Delete Point (Path)</button>
-      <button id="trimBtn">Trim Path</button>
-      <button id="clearBtn">Clear Path</button>
-      <button id="generateBtn">Generate Code</button>
-      <input id="delayInput" type="number" placeholder="Delay (ms)" value="1000">
-      </div>
-  </div>
-
-  <div class="main-display-container">
-    <div id="vexplan-drawing-tools">
-        <h2>Drawing Tools</h2>
-        <button id="toggle-drawing">Toggle Drawing Mode</button>
-        <select id="drawing-color">
-            <option value="black">Black</option>
-            <option value="red">Red</option>
-            <option value="blue">Blue</option>
-            <option value="green">Green</option>
-        </select>
-        <select id="drawing-size">
-            <option value="2">Small (2px)</option>
-            <option value="5">Medium (5px)</option>
-            <option value="10">Large (10px)</option>
-            <option value="15">Extra Large (15px)</option>
-            <option value="30">Max (30px)</option>
-        </select>
-        <select id="drawing-shape">
-            <option value="normal">Normal</option>
-            <option value="square">Square</option>
-            <option value="arrow">Arrow</option>
-        </select>
-        <button id="erase-tool">Erase</button>
-        <button id="clear-drawing">Clear Drawing</button>
+  <!-- Top Navigation Bar -->
+  <header id="topbar">
+    <div id="roboroute">
+      <img src="../assets/roboroute/favicon.jpg" id="titleIcon" alt="RoboRoute Logo">
+      <h1><a href="https://roboroute.netlify.app/" id="title">RoboRoute</a></h1>
     </div>
-
-    <div id="game-container">
-        <canvas id="pathCanvas" width="800" height="800"></canvas> <canvas id="drawing-canvas" width="800" height="800"></canvas> <div id="context-menu"> <ul></ul>
+    <nav id="tools">
+      <div class="tool-group">
+        <label class="tool-label">Path Tools</label>
+        <div class="tool-buttons">
+          <button id="linearBtn" class="tool-btn" title="Linear Path Mode">Linear Path</button>
+          <button id="insertBtn" class="tool-btn" title="Insert Point on Path Segment">Insert Point</button>
+          <button id="deleteBtn" class="tool-btn" title="Delete Path Point">Delete Point</button>
+          <button id="trimBtn" class="tool-btn" title="Trim Path from Selected Point">Trim Path</button>
+          <button id="clearBtn" class="tool-btn danger" title="Clear All Path Points">Clear Path</button>
         </div>
-    </div>
-
-    <div id="vexplan-score-display">
-        <h2>Scoreboard</h2>
-        <p>Red: <span id="red-score">0</span></p>
-        <p>Blue: <span id="blue-score">0</span></p>
-        <h2>Team Numbers</h2>
-        <p>Red Robot 1: <input id="red-team-1" type="text" placeholder="Enter team number"></p>
-        <p>Red Robot 2: <input id="red-team-2" type="text" placeholder="Enter team number"></p>
-        <p>Blue Robot 1: <input id="blue-team-1" type="text" placeholder="Enter team number"></p>
-        <p>Blue Robot 2: <input id="blue-team-2" type="text" placeholder="Enter team number"></p>
-        <h2>Ring Management</h2>
-        <p>Selected: <span id="selected-object-info">None</span></p>
-        <p>Rings: <span id="ring-count-info">0</span> (<span id="ring-list-info">None</span>)</p>
-        <button id="add-red-ring">Add Red Ring</button>
-        <button id="add-blue-ring">Add Blue Ring</button>
-        <button id="remove-ring">Remove Ring</button>
-        <h2>Controls</h2>
-        <button id="reset-simulation-button">Reset Simulation</button>
-        <button id="show-tutorial">Show Tutorial</button>
-    </div>
-  </div>
-
-  <div id="pointInfo">
-    <h4>Point Info</h4>
-    <p><strong>X:</strong> <span id="pointXSpan">0</span></p> <p><strong>Y:</strong> <span id="pointYSpan">0</span></p> <hr>
-    <button id="insertPointBtn">Insert Midpoint</button>
-    <button id="closePointInfo">Close</button>
-  </div>
-
-  <div id="actions" style="display:none;">
-    <h4>Actions</h4>
-    <input id="nameInput" type="text" placeholder="Enter Action Name">
-    <input id="codeInput" type="text" placeholder="Enter Code">
-    <button id="save">Save</button>
-  </div>
-
-  <div id="tutorial-modal">
-      <div id="tutorial-content">
-          <h2>VexPlan Tutorial - V5RC High Stakes</h2>
-          <p><strong>Objective:</strong> In V5RC High Stakes, two alliances (Red and Blue) compete to score points by placing colored rings (red or blue) on stakes and mobile goals, climbing the central ladder, or hanging from the ladder or stakes. The goal is to maximize your alliance's score while minimizing the opponent's.</p>
-          <p><strong>Game Elements:</strong></p>
-          <ul>
-              <li><strong>Robots:</strong> Red and blue squares represent robots (two per alliance). You can rename them with team numbers in the "Team Numbers" section.</li>
-              <li><strong>Mobile Goals:</strong> Orange hexagons that can hold up to 6 rings.</li>
-              <li><strong>Stakes:</strong>
-                  <ul>
-                      <li>Red/Blue Alliance Stakes (on the left/right walls): Only score for matching ring colors.</li>
-                      <li>Black Neutral Stakes (top/bottom walls): Score for any ring color.</li>
-                      <li>Yellow High Stake (center): Scores 6 points for the ring's alliance.</li>
-                  </ul>
-              </li>
-              <li><strong>Ladder:</strong> Pink diamond in the center where robots can climb or hang for bonus points.</li>
-              <li><strong>Corners:</strong> Green triangles in the corners:
-                  <ul>
-                      <li>Positive Corners (bottom-left, bottom-right): Double points for mobile goals.</li>
-                      <li>Negative Corners (top-left, top-right): Subtract points (minimum 0).</li>
-                  </ul>
-              </li>
-          </ul>
-          <p><strong>How to Use VexPlan:</strong></p>
-          <ol>
-              <li><strong>Rename Robots:</strong> In the "Team Numbers" section on the right, type a team number for each robot to label them (e.g., "123A"). The team number will appear on the robot square.</li>
-              <li><strong>Drag Robots and Mobile Goals:</strong> Click and drag robots (red/blue squares) or mobile goals (orange hexagons) to move them around the field.</li>
-              <li><strong>Add/Remove Rings:</strong> Left-click a stake or mobile goal to select it. In the "Ring Management" section, use the buttons to add a red ring, add a blue ring, or remove the top ring.</li>
-              <li><strong>Climb the Ladder:</strong> Move a robot onto the ladder (pink diamond), then right-click to set a climb level (1-3) for bonus points.</li>
-              <li><strong>Hang from Ladder or Stakes:</strong> Right-click a robot to set it to hang from the ladder or a nearby stake. Hanging scores additional points but cannot be combined with climbing.</li>
-              <li><strong>Draw Plans:</strong> In the "Drawing Tools" section on the left, click "Toggle Drawing Mode," select a color, size, and shape (Normal, Square, Arrow), and draw on the field to plan strategies. "Normal" draws freehand lines, "Square" draws a rectangle, and "Arrow" draws a line with an arrowhead. Use "Erase" to remove specific lines or "Clear Drawing" to erase everything.</li>
-              <li><strong>Reset:</strong> Click "Reset" in the right panel to return all elements to their starting positions. Team numbers will persist after a reset.</li>
-          </ol>
-          <p><strong>Scoring:</strong></p>
-          <ul>
-              <li><strong>Alliance Stakes:</strong> 1 point per matching ring, +2 if the top ring matches.</li>
-              <li><strong>Neutral Stakes:</strong> 1 point per ring, +2 for the top ring's alliance.</li>
-              <li><strong>High Stake:</strong> 6 points for the ring's alliance.</li>
-              <li><strong>Mobile Goals:</strong> 1 point per ring, +2 for the top ring's alliance, modified by corner effects.</li>
-              <li><strong>Climbing:</strong> 3/6/12 points for levels 1/2/3, +2 if a ring is on the high stake.</li>
-              <li><strong>Hanging:</strong>
-                  <ul>
-                      <li>Ladder: 5 points per robot.</li>
-                      <li>Alliance Stakes: 4 points if the robot's alliance matches the stake, 2 points otherwise.</li>
-                      <li>Neutral Stakes: 3 points per robot.</li>
-                      <li>Bonus: +1 point if hanging from a stake with at least one ring.</li>
-                  </ul>
-              </li>
-          </ul>
-          <button id="close-tutorial">Close</button>
       </div>
+      <div class="tool-group">
+        <label class="tool-label">Code Generation</label>
+        <div class="tool-buttons">
+          <input id="delayInput" type="number" placeholder="Delay (ms)" value="1000" title="Delay between path segments">
+          <button id="generateBtn" class="tool-btn primary" title="Generate Robot Code">Generate Code</button>
+        </div>
+      </div>
+      <div class="tool-group">
+        <label class="tool-label">Field</label>
+        <select id="fieldSelect" class="tool-select" title="Select Field Background">
+          <option value="../assets/fields/high-stakes-matches.png">High Stakes (Matches)</option>
+          <option value="../assets/fields/high-stakes-skills.png">High Stakes (Skills)</option>
+          <option value="../assets/fields/push-back-skills.png">Push Back (Skills)</option>
+          <option value="../assets/fields/over-under-matches.png">Over Under (Matches)</option>
+          <option value="../assets/fields/over-under-skills.png">Over Under (Skills)</option>
+          <option value="../assets/fields/empty-field.png">Empty Field</option>
+          <option value="custom">Custom Field</option>
+        </select>
+        <input id="customFieldInput" type="file" accept="image/*" style="display:none;">
+        <button id="uploadFieldBtn" class="tool-btn" style="display:none;">Upload</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="main-display-container">
+    <!-- Left Sidebar: Drawing Tools -->
+    <aside class="sidebar left-sidebar">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Drawing Tools</h2>
+          <button class="panel-toggle" aria-label="Toggle panel">−</button>
+        </div>
+        <div class="panel-content">
+          <div class="form-group">
+            <button id="toggle-drawing" class="btn btn-primary btn-block">Enable Drawing Mode</button>
+          </div>
+          <div class="form-group">
+            <label for="drawing-color">Color</label>
+            <select id="drawing-color" class="form-control">
+              <option value="black">Black</option>
+              <option value="red">Red</option>
+              <option value="blue">Blue</option>
+              <option value="green">Green</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="drawing-size">Size</label>
+            <select id="drawing-size" class="form-control">
+              <option value="2">Small (2px)</option>
+              <option value="5">Medium (5px)</option>
+              <option value="10">Large (10px)</option>
+              <option value="15">Extra Large (15px)</option>
+              <option value="30">Max (30px)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="drawing-shape">Shape</label>
+            <select id="drawing-shape" class="form-control">
+              <option value="normal">Normal</option>
+              <option value="square">Square</option>
+              <option value="arrow">Arrow</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button id="erase-tool" class="btn btn-secondary btn-block">Erase</button>
+            <button id="clear-drawing" class="btn btn-danger btn-block">Clear Drawing</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center: Game Canvas -->
+    <main id="game-container">
+      <canvas id="pathCanvas" width="800" height="800"></canvas>
+      <canvas id="drawing-canvas" width="800" height="800"></canvas>
+      <div id="context-menu">
+        <ul></ul>
+      </div>
+    </main>
+
+    <!-- Right Sidebar: Score & Controls -->
+    <aside class="sidebar right-sidebar">
+      <!-- Scoreboard Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Scoreboard</h2>
+          <button class="panel-toggle" aria-label="Toggle panel">−</button>
+        </div>
+        <div class="panel-content">
+          <div class="score-display">
+            <div class="score-item red-score">
+              <span class="score-label">Red</span>
+              <span class="score-value" id="red-score">0</span>
+            </div>
+            <div class="score-item blue-score">
+              <span class="score-label">Blue</span>
+              <span class="score-value" id="blue-score">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Numbers Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Team Numbers</h2>
+          <button class="panel-toggle" aria-label="Toggle panel">−</button>
+        </div>
+        <div class="panel-content">
+          <div class="form-group">
+            <label for="red-team-1">Red Robot 1</label>
+            <input id="red-team-1" type="text" class="form-control" placeholder="Enter team number">
+          </div>
+          <div class="form-group">
+            <label for="red-team-2">Red Robot 2</label>
+            <input id="red-team-2" type="text" class="form-control" placeholder="Enter team number">
+          </div>
+          <div class="form-group">
+            <label for="blue-team-1">Blue Robot 1</label>
+            <input id="blue-team-1" type="text" class="form-control" placeholder="Enter team number">
+          </div>
+          <div class="form-group">
+            <label for="blue-team-2">Blue Robot 2</label>
+            <input id="blue-team-2" type="text" class="form-control" placeholder="Enter team number">
+          </div>
+        </div>
+      </div>
+
+      <!-- Ring Management Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Ring Management</h2>
+          <button class="panel-toggle" aria-label="Toggle panel">−</button>
+        </div>
+        <div class="panel-content">
+          <div class="info-group">
+            <div class="info-item">
+              <span class="info-label">Selected:</span>
+              <span class="info-value" id="selected-object-info">None</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Rings:</span>
+              <span class="info-value" id="ring-count-info">0</span>
+              <span class="info-detail" id="ring-list-info">(None)</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <button id="add-red-ring" class="btn btn-danger btn-block" disabled>Add Red Ring</button>
+            <button id="add-blue-ring" class="btn btn-primary btn-block" disabled>Add Blue Ring</button>
+            <button id="remove-ring" class="btn btn-secondary btn-block" disabled>Remove Ring</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Controls</h2>
+          <button class="panel-toggle" aria-label="Toggle panel">−</button>
+        </div>
+        <div class="panel-content">
+          <div class="form-group">
+            <button id="reset-simulation-button" class="btn btn-warning btn-block">Reset Simulation</button>
+            <button id="show-tutorial" class="btn btn-secondary btn-block">Show Tutorial</button>
+          </div>
+          <div class="keyboard-shortcuts">
+            <h3>Keyboard Shortcuts</h3>
+            <ul>
+              <li><kbd>Ctrl+Z</kbd> Undo</li>
+              <li><kbd>Ctrl+Y</kbd> Redo</li>
+              <li><kbd>Scroll</kbd> Adjust heading</li>
+              <li><kbd>Ctrl+↑/↓</kbd> Move point order</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </aside>
   </div>
 
-  <script src="main.js"></script>
+  <!-- Point Info Panel (Floating) -->
+  <div id="pointInfo" class="floating-panel">
+    <div class="panel-header">
+      <h4>Point Info</h4>
+      <button id="closePointInfo" class="close-btn" aria-label="Close">×</button>
+    </div>
+    <div class="panel-content">
+      <div class="form-group">
+        <label for="pointXInput">X:</label>
+        <input id="pointXInput" type="number" step="0.1" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="pointYInput">Y:</label>
+        <input id="pointYInput" type="number" step="0.1" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="headingInput">Heading (°):</label>
+        <input id="headingInput" type="number" step="1" min="0" max="359" class="form-control">
+      </div>
+      <div class="form-group">
+        <p class="info-text"><strong>Point Index:</strong> <span id="pointIndexValue">N/A</span></p>
+      </div>
+      <div class="form-group">
+        <button id="insertPointBtn" class="btn btn-primary btn-block">Insert Midpoint</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Point List Panel (Floating) -->
+  <div id="pointListContainer" class="floating-panel">
+    <div class="panel-header">
+      <h3>Path Points</h3>
+      <button class="close-btn" id="closePointList" aria-label="Close">×</button>
+    </div>
+    <div class="panel-content">
+      <div id="pointList"></div>
+    </div>
+  </div>
+
+  <!-- Tutorial Modal -->
+  <div id="tutorial-modal" class="modal">
+    <div id="tutorial-content" class="modal-content">
+      <div class="modal-header">
+        <h2>Tutorial</h2>
+        <button id="close-tutorial" class="close-btn" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Tutorial content will be displayed here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="main.js"></script>
 </body>
 </html>
