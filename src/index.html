@@ -33,15 +33,17 @@
           <span class="readout-key">FIELD</span>
           <span id="fieldName" class="readout-val">High Stakes (Matches)</span>
         </span>
-        <span class="readout-chip zoom-chip" id="scaleChip" title="Drag left/right to zoom · Double-click to reset">
+        <span class="readout-chip zoom-chip" id="scaleChip" title="Click to type · Drag left/right to zoom · Dbl-click to reset">
           <svg class="zoom-icon" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M6 2l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="readout-key">SCALE</span>
-          <span id="scaleVal" class="readout-val">1.0×</span>
+          <span id="scaleVal" class="readout-val">1.00×</span>
+          <input type="text" id="scaleInput" class="chip-input" style="display: none;" value="1.00" autocomplete="off" spellcheck="false">
         </span>
-        <span class="readout-chip zoom-chip" id="canvasChip" title="Drag left/right to zoom · Double-click to reset">
+        <span class="readout-chip zoom-chip" id="canvasChip" title="Click to type · Drag left/right to zoom · Dbl-click to reset">
           <svg class="zoom-icon" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M6 2l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="readout-key">CANVAS</span>
-          <span id="canvasZoomVal" class="readout-val">100%</span>
+          <span id="canvasZoomVal" class="readout-val">800px</span>
+          <input type="text" id="canvasZoomInput" class="chip-input" style="display: none;" value="800" autocomplete="off" spellcheck="false">
         </span>
         <span class="readout-chip" id="modeChip">
           <span class="readout-key">MODE</span>

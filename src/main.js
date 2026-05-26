@@ -927,19 +927,39 @@ function setupEventListeners() {
     const canvasChip = document.getElementById("canvasChip");
     const scaleVal = document.getElementById("scaleVal");
     const canvasZoomVal = document.getElementById("canvasZoomVal");
+    const scaleInput = document.getElementById("scaleInput");
+    const canvasZoomInput = document.getElementById("canvasZoomInput");
 
     let isDraggingZoom = false;
     let dragZoomStartX = 0;
     let dragZoomStartScale = 1.0;
+    let dragZoomTarget = null;
+    let hasDragged = false;
+
+    function updateZoom(newScale) {
+        rrScale = Math.max(0.5, Math.min(5.0, newScale));
+        rrOffsetX = 400 - 400 * rrScale;
+        rrOffsetY = 400 - 400 * rrScale;
+
+        if (scaleVal) scaleVal.textContent = rrScale.toFixed(2) + '×';
+        if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 800) + 'px';
+
+        if (scaleInput) scaleInput.value = rrScale.toFixed(2);
+        if (canvasZoomInput) canvasZoomInput.value = Math.round(rrScale * 800);
+    }
 
     const handleZoomDragStart = (e) => {
+        // If clicking/interacting with the input element itself, don't drag-zoom
+        if (e.target.tagName === 'INPUT') return;
+
         isDraggingZoom = true;
+        dragZoomTarget = e.currentTarget === scaleChip ? 'scale' : 'canvas';
         dragZoomStartX = e.touches ? e.touches[0].clientX : e.clientX;
         dragZoomStartScale = rrScale;
+        hasDragged = false;
         document.body.style.cursor = 'ew-resize';
         document.body.style.userSelect = 'none';
         
-        // Prevent default browser behavior like selection
         e.preventDefault();
     };
 
@@ -951,50 +971,122 @@ function setupEventListeners() {
     window.addEventListener('mousemove', (e) => {
         if (!isDraggingZoom) return;
         const dx = e.clientX - dragZoomStartX;
+        if (Math.abs(dx) > 3) {
+            hasDragged = true;
+        }
         const scaleDelta = dx * 0.005; // 0.005 is smooth and responsive
-        const newScale = Math.max(0.5, Math.min(5.0, dragZoomStartScale + scaleDelta));
-        
-        rrScale = newScale;
-        // Zoom centered on the middle of the field (400, 400)
-        rrOffsetX = 400 - 400 * rrScale;
-        rrOffsetY = 400 - 400 * rrScale;
-
-        if (scaleVal) scaleVal.textContent = rrScale.toFixed(2) + '×';
-        if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 100) + '%';
+        const newScale = dragZoomStartScale + scaleDelta;
+        updateZoom(newScale);
     });
 
     window.addEventListener('touchmove', (e) => {
         if (!isDraggingZoom || e.touches.length !== 1) return;
         const dx = e.touches[0].clientX - dragZoomStartX;
+        if (Math.abs(dx) > 3) {
+            hasDragged = true;
+        }
         const scaleDelta = dx * 0.005;
-        const newScale = Math.max(0.5, Math.min(5.0, dragZoomStartScale + scaleDelta));
-        
-        rrScale = newScale;
-        rrOffsetX = 400 - 400 * rrScale;
-        rrOffsetY = 400 - 400 * rrScale;
-
-        if (scaleVal) scaleVal.textContent = rrScale.toFixed(2) + '×';
-        if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 100) + '%';
+        const newScale = dragZoomStartScale + scaleDelta;
+        updateZoom(newScale);
     }, { passive: true });
+
+    function showScaleInput() {
+        if (!scaleVal || !scaleInput) return;
+        scaleVal.style.display = 'none';
+        scaleInput.style.display = 'inline-block';
+        scaleInput.value = rrScale.toFixed(2);
+        scaleInput.focus();
+        scaleInput.select();
+    }
+
+    function showCanvasInput() {
+        if (!canvasZoomVal || !canvasZoomInput) return;
+        canvasZoomVal.style.display = 'none';
+        canvasZoomInput.style.display = 'inline-block';
+        canvasZoomInput.value = Math.round(rrScale * 800);
+        canvasZoomInput.focus();
+        canvasZoomInput.select();
+    }
+
+    function applyScaleInput() {
+        if (!scaleInput) return;
+        const val = parseFloat(scaleInput.value);
+        if (!isNaN(val)) {
+            updateZoom(val);
+        } else {
+            updateZoom(rrScale);
+        }
+        hideScaleInput();
+    }
+
+    function hideScaleInput() {
+        if (!scaleVal || !scaleInput) return;
+        scaleInput.style.display = 'none';
+        scaleVal.style.display = 'inline-block';
+    }
+
+    function applyCanvasInput() {
+        if (!canvasZoomInput) return;
+        const val = parseInt(canvasZoomInput.value);
+        if (!isNaN(val)) {
+            const newScale = val / 800;
+            updateZoom(newScale);
+        } else {
+            updateZoom(rrScale);
+        }
+        hideCanvasInput();
+    }
+
+    function hideCanvasInput() {
+        if (!canvasZoomVal || !canvasZoomInput) return;
+        canvasZoomInput.style.display = 'none';
+        canvasZoomVal.style.display = 'inline-block';
+    }
 
     const handleZoomDragEnd = () => {
         if (isDraggingZoom) {
             isDraggingZoom = false;
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
+
+            // If we just clicked (not dragged), show input field for typing
+            if (!hasDragged) {
+                if (dragZoomTarget === 'scale') {
+                    showScaleInput();
+                } else if (dragZoomTarget === 'canvas') {
+                    showCanvasInput();
+                }
+            }
         }
     };
 
     window.addEventListener('mouseup', handleZoomDragEnd);
     window.addEventListener('touchend', handleZoomDragEnd);
 
+    // Input event listeners (Enter / Esc / Blur)
+    scaleInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            applyScaleInput();
+        } else if (e.key === 'Escape') {
+            hideScaleInput();
+            e.stopPropagation();
+        }
+    });
+    scaleInput?.addEventListener('blur', applyScaleInput);
+
+    canvasZoomInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            applyCanvasInput();
+        } else if (e.key === 'Escape') {
+            hideCanvasInput();
+            e.stopPropagation();
+        }
+    });
+    canvasZoomInput?.addEventListener('blur', applyCanvasInput);
+
     // Double click to reset
     const handleZoomReset = () => {
-        rrScale = 1.0;
-        rrOffsetX = 0;
-        rrOffsetY = 0;
-        if (scaleVal) scaleVal.textContent = '1.0×';
-        if (canvasZoomVal) canvasZoomVal.textContent = '100%';
+        updateZoom(1.0);
     };
 
     scaleChip?.addEventListener('dblclick', handleZoomReset);
@@ -1010,8 +1102,12 @@ window.addEventListener('DOMContentLoaded', () => {
     // Update initial readout values
     const scaleVal = document.getElementById("scaleVal");
     const canvasZoomVal = document.getElementById("canvasZoomVal");
+    const scaleInput = document.getElementById("scaleInput");
+    const canvasZoomInput = document.getElementById("canvasZoomInput");
     if (scaleVal) scaleVal.textContent = rrScale.toFixed(2) + '×';
-    if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 100) + '%';
+    if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 800) + 'px';
+    if (scaleInput) scaleInput.value = rrScale.toFixed(2);
+    if (canvasZoomInput) canvasZoomInput.value = Math.round(rrScale * 800);
 
     rrUpdatePointList();
     updateLiveCodePreview();
