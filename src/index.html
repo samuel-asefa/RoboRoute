@@ -227,24 +227,17 @@
         </div>
         <div class="card-body">
           <div class="sketch-controls">
-            <div class="sketch-row">
-              <label>Color</label>
-              <select id="drawing-color" class="top-select" style="flex:1;padding:6px 10px;font-size:11px;">
-                <option value="white">White</option>
-                <option value="red">Red</option>
-                <option value="blue">Blue</option>
-                <option value="green">Green (Neon)</option>
-                <option value="black">Black</option>
-              </select>
+            <div class="sketch-row-palette">
+              <label>Brush Color</label>
+              <div id="drawing-color-palette" class="color-palette-grid"></div>
             </div>
-            <div class="sketch-row">
-              <label>Size</label>
-              <select id="drawing-size" class="top-select" style="flex:1;padding:6px 10px;font-size:11px;">
-                <option value="2">Fine (2px)</option>
-                <option value="4" selected>Medium (4px)</option>
-                <option value="8">Thick (8px)</option>
-                <option value="16">Heavy (16px)</option>
-              </select>
+            <div class="sketch-row" style="margin-top:10px;">
+              <label>Brush Size</label>
+              <span class="readout-chip zoom-chip" id="brushSizeChip" title="Click to type · Drag left/right to resize">
+                <svg class="zoom-icon" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h8M6 2l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span id="brushSizeVal" class="readout-val">4px</span>
+                <input type="text" id="brushSizeInput" class="chip-input" style="display: none;" value="4" autocomplete="off" spellcheck="false">
+              </span>
             </div>
             <div class="sketch-row">
               <label>Stamp</label>

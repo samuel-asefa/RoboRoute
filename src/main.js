@@ -48,8 +48,8 @@ let isDrawing = false;
 let isErasing = false;
 let drawingStartX = 0, drawingStartY = 0;
 let drawingCurrentX = 0, drawingCurrentY = 0;
-let drawingColor = 'rgba(190,242,100,0.85)';
-let drawingSize = 3;
+let drawingColor = '#ffffff';
+let drawingSize = 4;
 let drawingShape = 'normal';
 
 // ============== DOM References ===============
@@ -837,12 +837,136 @@ function setupEventListeners() {
         }
     });
 
-    document.getElementById('drawing-color')?.addEventListener('change', (e) => {
-        const colorMap = { black: 'rgba(15,15,20,0.9)', red: 'rgba(248,113,113,0.9)', blue: 'rgba(96,165,250,0.9)', green: 'rgba(190,242,100,0.9)', white: 'rgba(248,250,252,0.9)' };
-        drawingColor = colorMap[e.target.value] || e.target.value;
-        isErasing = false;
+    // Color palette initialization
+    const googleColors = [
+        "#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#cccccc", "#d9d9d9", "#efefef", "#f3f3f3", "#ffffff",
+        "#980000", "#ff0000", "#ff9900", "#ffff00", "#00ff00", "#00ffff", "#4a86e8", "#0000ff", "#9900ff", "#ff00ff",
+        "#e6b8af", "#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#c9daf8", "#cfe2f3", "#d9d2e9", "#ead1dc",
+        "#dd7e6b", "#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#a4c2f4", "#9fc5e8", "#b4a7d6", "#d5a6bd",
+        "#cc4125", "#e06666", "#f6b26b", "#ffd966", "#93c47d", "#76a5af", "#6d9ee1", "#6fa8dc", "#8e7cc3", "#c27ba0",
+        "#a61c00", "#cc0000", "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3c78d8", "#3d85c6", "#674ea7", "#a64d79",
+        "#85200c", "#990000", "#b45f06", "#bf9000", "#38761d", "#134f5c", "#1155cc", "#0b5394", "#351c75", "#741b47",
+        "#5b0f00", "#660000", "#783f04", "#7f6000", "#274e13", "#0c343d", "#1c4587", "#073763", "#20124d", "#4d1234"
+    ];
+
+    const paletteContainer = document.getElementById('drawing-color-palette');
+    if (paletteContainer) {
+        paletteContainer.innerHTML = '';
+        googleColors.forEach(color => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.style.backgroundColor = color;
+            swatch.title = color.toUpperCase();
+            
+            // Contrast check for checkmark color
+            const r = parseInt(color.slice(1, 3), 16);
+            const g = parseInt(color.slice(3, 5), 16);
+            const b = parseInt(color.slice(5, 7), 16);
+            const hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b));
+            if (hsp > 200) swatch.classList.add('light-color');
+
+            if (color === '#ffffff') {
+                swatch.classList.add('selected');
+                drawingColor = '#ffffff';
+            }
+
+            swatch.addEventListener('click', () => {
+                paletteContainer.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+                swatch.classList.add('selected');
+                drawingColor = color;
+                isErasing = false;
+            });
+            paletteContainer.appendChild(swatch);
+        });
+    }
+
+    // Brush Size chip setup
+    const brushSizeChip = document.getElementById("brushSizeChip");
+    const brushSizeVal = document.getElementById("brushSizeVal");
+    const brushSizeInput = document.getElementById("brushSizeInput");
+
+    let isDraggingBrushSize = false;
+    let dragBrushSizeStartX = 0;
+    let dragBrushSizeStartVal = 4;
+    let hasDraggedBrushSize = false;
+
+    function updateBrushSize(newSize) {
+        drawingSize = Math.max(1, Math.min(100, Math.round(newSize)));
+        if (brushSizeVal) brushSizeVal.textContent = drawingSize + 'px';
+        if (brushSizeInput) brushSizeInput.value = drawingSize;
+    }
+
+    const handleBrushSizeDragStart = (e) => {
+        if (e.target.tagName === 'INPUT') return;
+        isDraggingBrushSize = true;
+        dragBrushSizeStartX = e.touches ? e.touches[0].clientX : e.clientX;
+        dragBrushSizeStartVal = drawingSize;
+        hasDraggedBrushSize = false;
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+    };
+
+    brushSizeChip?.addEventListener('mousedown', handleBrushSizeDragStart);
+    brushSizeChip?.addEventListener('touchstart', handleBrushSizeDragStart, { passive: false });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDraggingBrushSize) return;
+        const dx = e.clientX - dragBrushSizeStartX;
+        if (Math.abs(dx) > 3) hasDraggedBrushSize = true;
+        const newSize = dragBrushSizeStartVal + dx * 0.2;
+        updateBrushSize(newSize);
     });
-    document.getElementById('drawing-size')?.addEventListener('change', (e) => { drawingSize = parseInt(e.target.value); isErasing = false; });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!isDraggingBrushSize || e.touches.length !== 1) return;
+        const dx = e.touches[0].clientX - dragBrushSizeStartX;
+        if (Math.abs(dx) > 3) hasDraggedBrushSize = true;
+        const newSize = dragBrushSizeStartVal + dx * 0.2;
+        updateBrushSize(newSize);
+    }, { passive: true });
+
+    function showBrushSizeInput() {
+        if (!brushSizeVal || !brushSizeInput) return;
+        brushSizeVal.style.display = 'none';
+        brushSizeInput.style.display = 'inline-block';
+        brushSizeInput.value = drawingSize;
+        brushSizeInput.focus();
+        brushSizeInput.select();
+    }
+
+    function applyBrushSizeInput() {
+        if (!brushSizeInput) return;
+        const val = parseInt(brushSizeInput.value);
+        if (!isNaN(val)) updateBrushSize(val);
+        else updateBrushSize(drawingSize);
+        hideBrushSizeInput();
+    }
+
+    function hideBrushSizeInput() {
+        if (!brushSizeVal || !brushSizeInput) return;
+        brushSizeInput.style.display = 'none';
+        brushSizeVal.style.display = 'inline-block';
+    }
+
+    const handleBrushSizeDragEnd = () => {
+        if (isDraggingBrushSize) {
+            isDraggingBrushSize = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            if (!hasDraggedBrushSize) showBrushSizeInput();
+        }
+    };
+
+    window.addEventListener('mouseup', handleBrushSizeDragEnd);
+    window.addEventListener('touchend', handleBrushSizeDragEnd);
+
+    brushSizeInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') applyBrushSizeInput();
+        else if (e.key === 'Escape') { hideBrushSizeInput(); e.stopPropagation(); }
+    });
+    brushSizeInput?.addEventListener('blur', applyBrushSizeInput);
+
     document.getElementById('drawing-shape')?.addEventListener('change', (e) => { drawingShape = e.target.value; });
 
     document.getElementById('erase-tool')?.addEventListener('click', () => {

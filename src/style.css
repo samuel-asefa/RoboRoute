@@ -979,9 +979,69 @@ kbd {
   transform: translateX(24px) scale(0.95);
 }
 
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(32px) scale(0.95); }
-  to   { opacity: 1; transform: translateX(0) scale(1); }
+/* Color Palette Styles */
+.sketch-row-palette {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sketch-row-palette label {
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.color-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  background: rgba(15, 18, 24, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 6px;
+}
+
+.color-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
+  z-index: 2;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Selected swatch checkmark icon */
+.color-swatch.selected::after {
+  content: '';
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 3px;
+  height: 6px;
+  border-right: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff;
+}
+
+.color-swatch.selected.light-color::after {
+  border-right: 1.5px solid #000000;
+  border-bottom: 1.5px solid #000000;
+}
+
+/* Specific border for very light colors so they are visible on dark background */
+.color-swatch.light-color {
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* ==========================================================================
