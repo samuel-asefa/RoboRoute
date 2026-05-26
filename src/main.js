@@ -640,9 +640,14 @@ function setupEventListeners() {
                     if (rrDeleteMode) {
                         rrSaveState();
                         rrPoints.splice(i, 1);
-                        if (rrSelectedPointIndex === i) rrHidePointInfo();
-                        else if (rrSelectedPointIndex > i) rrSelectedPointIndex--;
-                        rrSetActiveMode(null);
+                        if (rrSelectedPointIndex === i) {
+                            rrHidePointInfo();
+                        } else {
+                            if (rrSelectedPointIndex > i) {
+                                rrSelectedPointIndex--;
+                            }
+                            rrUpdatePointList();
+                        }
                         rrJustDeletedPoint = true;
                         setTimeout(() => { rrJustDeletedPoint = false; }, 100);
                         return;
@@ -756,7 +761,6 @@ function setupEventListeners() {
                     rrSaveState();
                     rrPoints.splice(i);
                     rrHidePointInfo();
-                    rrSetActiveMode(null);
                     return;
                 }
             }
@@ -769,9 +773,10 @@ function setupEventListeners() {
                 const h2 = rrPoints[rrHoverPoint.segmentIndex + 1].heading;
                 h = h1 + (h2 - h1) * rrHoverPoint.t;
             }
-            rrPoints.splice(rrHoverPoint.segmentIndex + 1, 0, { x: rrHoverPoint.x, y: rrHoverPoint.y, heading: h });
+            const insertIdx = rrHoverPoint.segmentIndex + 1;
+            rrPoints.splice(insertIdx, 0, { x: rrHoverPoint.x, y: rrHoverPoint.y, heading: h });
             rrHoverPoint = null;
-            updateLiveCodePreview();
+            rrSelectPoint(insertIdx);
             return;
         } else if (rrDeleteMode) {
             return;
