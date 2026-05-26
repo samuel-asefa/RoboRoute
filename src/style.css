@@ -218,6 +218,35 @@ html, body {
   color: var(--accent);
 }
 
+/* Zoom chip interaction styles */
+.zoom-chip {
+  cursor: ew-resize;
+  user-select: none;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.zoom-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(190, 242, 100, 0.15);
+}
+
+.zoom-chip:active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent);
+}
+
+.zoom-icon {
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.zoom-chip:hover .zoom-icon {
+  opacity: 1;
+  color: var(--accent);
+  transform: scale(1.1);
+}
+
 /* Mode pill buttons */
 .mode-pill-group {
   display: flex;

@@ -31,6 +31,12 @@ let rrJustDeletedPoint = false;
 let rrScale = 1.0;
 let rrOffsetX = 0;
 let rrOffsetY = 0;
+let rrIsPanning = false;
+let rrPanStartX = 0;
+let rrPanStartY = 0;
+let rrPanStartOffsetX = 0;
+let rrPanStartOffsetY = 0;
+let rrDidPan = false;
 
 // Field background
 let rrCurrentFieldImage = new Image();
@@ -97,11 +103,13 @@ function rrVexToCanvas(x, y) {
 }
 
 function rrCanvasToVex(x, y) {
+    const cx_unscaled = (x - rrOffsetX) / rrScale;
+    const cy_unscaled = (y - rrOffsetY) / rrScale;
     const scaleX = (RR_VEX_MAX - RR_VEX_MIN) / RR_CANVAS_WIDTH;
     const scaleY = (RR_VEX_MAX - RR_VEX_MIN) / RR_CANVAS_HEIGHT;
     return {
-        x: RR_VEX_MIN + x * scaleX,
-        y: RR_VEX_MAX - y * scaleY
+        x: RR_VEX_MIN + cx_unscaled * scaleX,
+        y: RR_VEX_MAX - cy_unscaled * scaleY
     };
 }
 
@@ -604,6 +612,20 @@ function setupEventListeners() {
     // Canvas: mousedown
     rrCanvas.addEventListener('mousedown', (e) => {
         if (drawingModeActive) return;
+
+        // Right-click (2), middle-click (1), or Shift + Left-click (0 + Shift) triggers panning
+        if (e.button === 2 || e.button === 1 || (e.button === 0 && e.shiftKey)) {
+            rrIsPanning = true;
+            rrPanStartX = e.clientX;
+            rrPanStartY = e.clientY;
+            rrPanStartOffsetX = rrOffsetX;
+            rrPanStartOffsetY = rrOffsetY;
+            rrDidPan = false;
+            rrCanvas.style.cursor = 'grabbing';
+            e.preventDefault();
+            return;
+        }
+
         const rect = rrCanvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -637,6 +659,19 @@ function setupEventListeners() {
     // Canvas: mousemove
     rrCanvas.addEventListener('mousemove', (e) => {
         if (drawingModeActive) return;
+
+        if (rrIsPanning) {
+            const dx = e.clientX - rrPanStartX;
+            const dy = e.clientY - rrPanStartY;
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                rrDidPan = true;
+            }
+            rrOffsetX = rrPanStartOffsetX + dx;
+            rrOffsetY = rrPanStartOffsetY + dy;
+            rrCanvas.style.cursor = 'grabbing';
+            return;
+        }
+
         const rect = rrCanvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -673,21 +708,43 @@ function setupEventListeners() {
                 else { rrPoints[i].color = '#bef264'; }
             }
             rrCanvas.style.cursor = onPt ? 'not-allowed' : 'crosshair';
+        } else if (e.shiftKey) {
+            rrCanvas.style.cursor = 'grab';
         } else {
             rrCanvas.style.cursor = 'crosshair';
         }
     });
 
     // Canvas: mouseup
-    rrCanvas.addEventListener('mouseup', () => {
+    rrCanvas.addEventListener('mouseup', (e) => {
         if (drawingModeActive) return;
+        if (rrIsPanning) {
+            rrIsPanning = false;
+            rrCanvas.style.cursor = e.shiftKey ? 'grab' : 'crosshair';
+            return;
+        }
         if (rrIsDraggingPoint && rrSelectedPoint) rrSaveState();
         rrIsDraggingPoint = false;
     });
 
+    // Prevent context menu to allow smooth right-click dragging
+    rrCanvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+
+    // Canvas: mouseleave
+    rrCanvas.addEventListener('mouseleave', () => {
+        if (rrIsPanning) {
+            rrIsPanning = false;
+        }
+    });
+
     // Canvas: click (place points)
     rrCanvas.addEventListener('click', (e) => {
-        if (drawingModeActive || e.button !== 0) return;
+        if (drawingModeActive || e.button !== 0 || e.shiftKey || rrDidPan) {
+            if (rrDidPan) rrDidPan = false;
+            return;
+        }
         const rect = rrCanvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -864,6 +921,84 @@ function setupEventListeners() {
             reader.readAsDataURL(fileInput.files[0]);
         }
     });
+
+    // Drag-to-zoom on scaleChip and canvasChip
+    const scaleChip = document.getElementById("scaleChip");
+    const canvasChip = document.getElementById("canvasChip");
+    const scaleVal = document.getElementById("scaleVal");
+    const canvasZoomVal = document.getElementById("canvasZoomVal");
+
+    let isDraggingZoom = false;
+    let dragZoomStartX = 0;
+    let dragZoomStartScale = 1.0;
+
+    const handleZoomDragStart = (e) => {
+        isDraggingZoom = true;
+        dragZoomStartX = e.touches ? e.touches[0].clientX : e.clientX;
+        dragZoomStartScale = rrScale;
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+        
+        // Prevent default browser behavior like selection
+        e.preventDefault();
+    };
+
+    scaleChip?.addEventListener('mousedown', handleZoomDragStart);
+    canvasChip?.addEventListener('mousedown', handleZoomDragStart);
+    scaleChip?.addEventListener('touchstart', handleZoomDragStart, { passive: false });
+    canvasChip?.addEventListener('touchstart', handleZoomDragStart, { passive: false });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDraggingZoom) return;
+        const dx = e.clientX - dragZoomStartX;
+        const scaleDelta = dx * 0.005; // 0.005 is smooth and responsive
+        const newScale = Math.max(0.5, Math.min(5.0, dragZoomStartScale + scaleDelta));
+        
+        rrScale = newScale;
+        // Zoom centered on the middle of the field (400, 400)
+        rrOffsetX = 400 - 400 * rrScale;
+        rrOffsetY = 400 - 400 * rrScale;
+
+        if (scaleVal) scaleVal.textContent = rrScale.toFixed(2) + '×';
+        if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 100) + '%';
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!isDraggingZoom || e.touches.length !== 1) return;
+        const dx = e.touches[0].clientX - dragZoomStartX;
+        const scaleDelta = dx * 0.005;
+        const newScale = Math.max(0.5, Math.min(5.0, dragZoomStartScale + scaleDelta));
+        
+        rrScale = newScale;
+        rrOffsetX = 400 - 400 * rrScale;
+        rrOffsetY = 400 - 400 * rrScale;
+
+        if (scaleVal) scaleVal.textContent = rrScale.toFixed(2) + '×';
+        if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 100) + '%';
+    }, { passive: true });
+
+    const handleZoomDragEnd = () => {
+        if (isDraggingZoom) {
+            isDraggingZoom = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+    };
+
+    window.addEventListener('mouseup', handleZoomDragEnd);
+    window.addEventListener('touchend', handleZoomDragEnd);
+
+    // Double click to reset
+    const handleZoomReset = () => {
+        rrScale = 1.0;
+        rrOffsetX = 0;
+        rrOffsetY = 0;
+        if (scaleVal) scaleVal.textContent = '1.0×';
+        if (canvasZoomVal) canvasZoomVal.textContent = '100%';
+    };
+
+    scaleChip?.addEventListener('dblclick', handleZoomReset);
+    canvasChip?.addEventListener('dblclick', handleZoomReset);
 }
 
 // ============== Init ===============
@@ -871,6 +1006,12 @@ window.addEventListener('DOMContentLoaded', () => {
     rrMode = 'linear';
     rrPointCreationEnabled = true;
     rrLinearBtn?.classList.add('active-mode');
+
+    // Update initial readout values
+    const scaleVal = document.getElementById("scaleVal");
+    const canvasZoomVal = document.getElementById("canvasZoomVal");
+    if (scaleVal) scaleVal.textContent = rrScale.toFixed(2) + '×';
+    if (canvasZoomVal) canvasZoomVal.textContent = Math.round(rrScale * 100) + '%';
 
     rrUpdatePointList();
     updateLiveCodePreview();
