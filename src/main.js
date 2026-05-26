@@ -613,8 +613,8 @@ function setupEventListeners() {
     rrCanvas.addEventListener('mousedown', (e) => {
         if (drawingModeActive) return;
 
-        // Right-click (2), middle-click (1), or Shift + Left-click (0 + Shift) triggers panning
-        if (e.button === 2 || e.button === 1 || (e.button === 0 && e.shiftKey)) {
+        // Right-click (2), middle-click (1), or Left-click + Shift/Ctrl/Cmd triggers panning
+        if (e.button === 2 || e.button === 1 || (e.button === 0 && (e.shiftKey || e.ctrlKey || e.metaKey))) {
             rrIsPanning = true;
             rrPanStartX = e.clientX;
             rrPanStartY = e.clientY;
@@ -708,7 +708,7 @@ function setupEventListeners() {
                 else { rrPoints[i].color = '#bef264'; }
             }
             rrCanvas.style.cursor = onPt ? 'not-allowed' : 'crosshair';
-        } else if (e.shiftKey) {
+        } else if (e.shiftKey || e.ctrlKey || e.metaKey) {
             rrCanvas.style.cursor = 'grab';
         } else {
             rrCanvas.style.cursor = 'crosshair';
@@ -720,7 +720,7 @@ function setupEventListeners() {
         if (drawingModeActive) return;
         if (rrIsPanning) {
             rrIsPanning = false;
-            rrCanvas.style.cursor = e.shiftKey ? 'grab' : 'crosshair';
+            rrCanvas.style.cursor = (e.shiftKey || e.ctrlKey || e.metaKey) ? 'grab' : 'crosshair';
             return;
         }
         if (rrIsDraggingPoint && rrSelectedPoint) rrSaveState();
@@ -741,7 +741,7 @@ function setupEventListeners() {
 
     // Canvas: click (place points)
     rrCanvas.addEventListener('click', (e) => {
-        if (drawingModeActive || e.button !== 0 || e.shiftKey || rrDidPan) {
+        if (drawingModeActive || e.button !== 0 || e.shiftKey || e.ctrlKey || e.metaKey || rrDidPan) {
             if (rrDidPan) rrDidPan = false;
             return;
         }
