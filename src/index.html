@@ -3,264 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboRoute - VEX Path Planning Tool</title>
+    <title>RoboRoute v3 — VEX Path Planner</title>
+    <meta name="description" content="RoboRoute: A premium path planning tool for VEX Robotics autonomous programming.">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image" href="../assets/roboroute/favicon.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mona+Sans:ital,wght@0,200..900;1,200..900&family=Noto+Sans:wght@300;400;500;600;700;800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Top Navigation Bar -->
-  <header id="topbar">
-    <div id="roboroute">
-      <img src="../assets/roboroute/favicon.jpg" id="titleIcon" alt="RoboRoute Logo">
-      <h1><a href="https://roboroute.netlify.app/" id="title">RoboRoute</a></h1>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Top Command Bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <div class="brand">
+        <img src="../assets/roboroute/favicon.jpg" id="logoIcon" alt="RoboRoute Logo">
+        <div class="brand-text">
+          <span class="brand-name">RoboRoute</span>
+          <span class="brand-version">v3.0</span>
+        </div>
+      </div>
+      <div class="top-divider"></div>
+      <div class="readouts">
+        <span class="readout-chip">
+          <span class="readout-dot"></span>
+          <span class="readout-key">FIELD</span>
+          <span id="fieldName" class="readout-val">High Stakes (Matches)</span>
+        </span>
+        <span class="readout-chip">
+          <span class="readout-key">SCALE</span>
+          <span class="readout-val">144"</span>
+        </span>
+        <span class="readout-chip">
+          <span class="readout-key">CANVAS</span>
+          <span class="readout-val">800px</span>
+        </span>
+        <span class="readout-chip" id="modeChip">
+          <span class="readout-key">MODE</span>
+          <span id="activeModeLabel" class="readout-val mode-label active">Linear Mode</span>
+        </span>
+        <span class="readout-chip">
+          <span class="readout-key">PTS</span>
+          <span id="pathLength" class="readout-val">0 pts</span>
+        </span>
+      </div>
     </div>
-    <nav id="tools">
-      <div class="tool-group">
-        <label class="tool-label">Path Tools</label>
-        <div class="tool-buttons">
-          <button id="linearBtn" class="tool-btn" title="Linear Path Mode">Linear Path</button>
-          <button id="insertBtn" class="tool-btn" title="Insert Point on Path Segment">Insert Point</button>
-          <button id="deleteBtn" class="tool-btn" title="Delete Path Point">Delete Point</button>
-          <button id="trimBtn" class="tool-btn" title="Trim Path from Selected Point">Trim Path</button>
-          <button id="clearBtn" class="tool-btn danger" title="Clear All Path Points">Clear Path</button>
-        </div>
+
+    <div class="top-bar-center">
+      <!-- Segmented Path Tool Controls -->
+      <div class="mode-pill-group">
+        <button id="linearBtn" class="mode-pill active-mode" title="Linear placement mode — click field to add waypoints">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="2" cy="7" r="1.5" fill="currentColor"/><line x1="3.5" y1="7" x2="10.5" y2="7" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="7" r="1.5" fill="currentColor"/></svg>
+          Create
+        </button>
+        <button id="insertBtn" class="mode-pill" title="Insert a node onto an existing path segment">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2V12M2 7H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Insert
+        </button>
+        <button id="deleteBtn" class="mode-pill" title="Delete a path node">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Delete
+        </button>
+        <button id="trimBtn" class="mode-pill" title="Trim path from a selected node onward">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7H8M10 4L12.5 7L10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Trim
+        </button>
       </div>
-      <div class="tool-group">
-        <label class="tool-label">Code Generation</label>
-        <div class="tool-buttons">
-          <input id="delayInput" type="number" placeholder="Delay (ms)" value="1000" title="Delay between path segments">
-          <button id="generateBtn" class="tool-btn primary" title="Generate Robot Code">Generate Code</button>
-        </div>
-      </div>
-      <div class="tool-group">
-        <label class="tool-label">Field</label>
-        <select id="fieldSelect" class="tool-select" title="Select Field Background">
-          <option value="../assets/fields/high-stakes-matches.png">High Stakes (Matches)</option>
-          <option value="../assets/fields/high-stakes-skills.png">High Stakes (Skills)</option>
-          <option value="../assets/fields/push-back-skills.png">Push Back (Skills)</option>
-          <option value="../assets/fields/over-under-matches.png">Over Under (Matches)</option>
-          <option value="../assets/fields/over-under-skills.png">Over Under (Skills)</option>
+
+      <div class="top-divider"></div>
+
+      <button id="clearBtn" class="top-btn top-btn-danger" title="Clear all waypoints">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M11 3L3 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Clear
+      </button>
+    </div>
+
+    <div class="top-bar-right">
+      <div class="input-glass-group">
+        <select id="fieldSelect" class="top-select" title="Select Field Preset">
+          <option value="../assets/fields/high-stakes-matches.png">High Stakes — Match</option>
+          <option value="../assets/fields/high-stakes-skills.png">High Stakes — Skills</option>
+          <option value="../assets/fields/push-back-matches.png">Push Back — Match</option>
+          <option value="../assets/fields/push-back-skills.png">Push Back — Skills</option>
+          <option value="../assets/fields/over-under-matches.png">Over Under — Match</option>
+          <option value="../assets/fields/over-under-skills.png">Over Under — Skills</option>
           <option value="../assets/fields/empty-field.png">Empty Field</option>
-          <option value="custom">Custom Field</option>
+          <option value="custom">Custom Upload…</option>
         </select>
-        <input id="customFieldInput" type="file" accept="image/*" style="display:none;">
-        <button id="uploadFieldBtn" class="tool-btn" style="display:none;">Upload</button>
       </div>
-    </nav>
+      <input id="customFieldInput" type="file" accept="image/*" class="hidden-input">
+      <button id="uploadFieldBtn" class="top-btn hidden-btn">Upload</button>
+    </div>
   </header>
 
-  <!-- Main Content Area -->
-  <div class="main-display-container">
-    <!-- Left Sidebar: Drawing Tools -->
-    <aside class="sidebar left-sidebar">
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Drawing Tools</h2>
-          <button class="panel-toggle" aria-label="Toggle panel">−</button>
+  <!-- Main Body -->
+  <div class="app-body">
+
+    <!-- Canvas Zone -->
+    <section class="canvas-zone">
+      <div class="canvas-frame">
+        <main id="game-container">
+          <canvas id="pathCanvas" width="800" height="800"></canvas>
+          <canvas id="drawing-canvas" width="800" height="800"></canvas>
+        </main>
+      </div>
+    </section>
+
+    <!-- Right Control Panel -->
+    <aside class="control-panel">
+
+      <!-- Live Code Preview -->
+      <div class="panel-card code-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot"></span>
+            <h3>Live Code Output</h3>
+          </div>
+          <button id="copyCodeBtn" class="copy-btn" title="Copy generated code to clipboard">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 9.5V2.5A.5.5 0 0 1 2.5 2H9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Copy
+          </button>
         </div>
-        <div class="panel-content">
-          <div class="form-group">
-            <button id="toggle-drawing" class="btn btn-primary btn-block">Enable Drawing Mode</button>
+        <div class="code-body">
+          <div class="delay-row">
+            <label for="delayInput">Pose Delay (ms)</label>
+            <input id="delayInput" type="number" class="small-input" value="1000" min="100" max="9999">
           </div>
-          <div class="form-group">
-            <label for="drawing-color">Color</label>
-            <select id="drawing-color" class="form-control">
-              <option value="black">Black</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-              <option value="green">Green</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="drawing-size">Size</label>
-            <select id="drawing-size" class="form-control">
-              <option value="2">Small (2px)</option>
-              <option value="5">Medium (5px)</option>
-              <option value="10">Large (10px)</option>
-              <option value="15">Extra Large (15px)</option>
-              <option value="30">Max (30px)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="drawing-shape">Shape</label>
-            <select id="drawing-shape" class="form-control">
-              <option value="normal">Normal</option>
-              <option value="square">Square</option>
-              <option value="arrow">Arrow</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <button id="erase-tool" class="btn btn-secondary btn-block">Erase</button>
-            <button id="clear-drawing" class="btn btn-danger btn-block">Clear Drawing</button>
+          <div class="code-block-wrap">
+            <pre class="code-block"><code id="liveCode"><span class="code-comment">// Place points on the field to</span>
+<span class="code-comment">// generate autonomous code</span></code></pre>
           </div>
         </div>
       </div>
+
+      <!-- Path Data Operations -->
+      <div class="panel-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot card-dot-cyan"></span>
+            <h3>Path Data</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="btn-row-3">
+            <button id="savePathBtn" class="panel-btn panel-btn-cyan" title="Save to browser local storage">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2h6.5L11 4.5V11H2V2z" stroke="currentColor" stroke-width="1.2"/><rect x="4" y="7.5" width="5" height="3.5" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="3.5" y="2" width="4" height="3" fill="currentColor" rx="0.5"/></svg>
+              Save
+            </button>
+            <button id="loadPathBtn" class="panel-btn" title="Load from browser local storage">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 9.5L6.5 6.5 10 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M6.5 6.5V12M2 2h9v5H2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              Load
+            </button>
+            <button id="exportJsonBtn" class="panel-btn" title="Download path as JSON file">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2.5 11h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Point Editor -->
+      <div id="point-editor-card" class="panel-card point-editor-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot card-dot-blue"></span>
+            <h3>Point Editor</h3>
+          </div>
+          <span class="point-badge" id="pointIndexValue">—</span>
+        </div>
+        <div class="card-body">
+          <div class="coord-grid">
+            <div class="coord-field">
+              <label for="pointXInput">X (inches)</label>
+              <input id="pointXInput" type="number" step="0.1" class="coord-input">
+            </div>
+            <div class="coord-field">
+              <label for="pointYInput">Y (inches)</label>
+              <input id="pointYInput" type="number" step="0.1" class="coord-input">
+            </div>
+          </div>
+          <div class="coord-field">
+            <label for="headingInput">Heading (°) <span class="label-hint">— scroll wheel on canvas</span></label>
+            <input id="headingInput" type="number" step="1" min="0" max="359" class="coord-input">
+          </div>
+          <div class="editor-actions">
+            <button id="insertPointBtn" class="panel-btn panel-btn-cyan">Insert Midpoint After</button>
+            <button id="closePointInfo" class="panel-btn panel-btn-ghost">Deselect</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Waypoint List -->
+      <div class="panel-card flex-card">
+        <div class="card-header justify-between">
+          <div class="card-title-group">
+            <span class="card-dot card-dot-green"></span>
+            <h3>Waypoints</h3>
+          </div>
+          <button id="closePointList" class="icon-btn" style="display:none;" aria-label="Deselect">×</button>
+        </div>
+        <div class="card-body scrollable-list" id="pointListContainer">
+          <div id="pointList"></div>
+        </div>
+      </div>
+
+      <!-- Sketchpad -->
+      <div class="panel-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot card-dot-muted"></span>
+            <h3>Sketchpad</h3>
+          </div>
+          <button id="toggle-drawing" class="top-btn" style="padding:6px 14px;font-size:11px;">Enable</button>
+        </div>
+        <div class="card-body">
+          <div class="sketch-controls">
+            <div class="sketch-row">
+              <label>Color</label>
+              <select id="drawing-color" class="top-select" style="flex:1;padding:6px 10px;font-size:11px;">
+                <option value="white">White</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green (Neon)</option>
+                <option value="black">Black</option>
+              </select>
+            </div>
+            <div class="sketch-row">
+              <label>Size</label>
+              <select id="drawing-size" class="top-select" style="flex:1;padding:6px 10px;font-size:11px;">
+                <option value="2">Fine (2px)</option>
+                <option value="4" selected>Medium (4px)</option>
+                <option value="8">Thick (8px)</option>
+                <option value="16">Heavy (16px)</option>
+              </select>
+            </div>
+            <div class="sketch-row">
+              <label>Stamp</label>
+              <select id="drawing-shape" class="top-select" style="flex:1;padding:6px 10px;font-size:11px;">
+                <option value="normal">Freehand</option>
+                <option value="square">Rectangle</option>
+                <option value="arrow">Arrow</option>
+              </select>
+            </div>
+          </div>
+          <div class="btn-row-2">
+            <button id="erase-tool" class="panel-btn">Eraser</button>
+            <button id="clear-drawing" class="panel-btn panel-btn-danger">Wipe</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shortcuts -->
+      <div class="panel-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-dot card-dot-muted"></span>
+            <h3>Shortcuts</h3>
+          </div>
+        </div>
+        <div class="card-body">
+          <ul class="shortcut-list">
+            <li><kbd>Ctrl Z</kbd><span>Undo</span></li>
+            <li><kbd>Ctrl Y</kbd><span>Redo</span></li>
+            <li><kbd>Scroll</kbd><span>Rotate heading</span></li>
+            <li><kbd>Del / ⌫</kbd><span>Remove selected point</span></li>
+            <li><kbd>Drag</kbd><span>Move waypoint</span></li>
+          </ul>
+        </div>
+      </div>
+
     </aside>
-
-    <!-- Center: Game Canvas -->
-    <main id="game-container">
-      <canvas id="pathCanvas" width="800" height="800"></canvas>
-      <canvas id="drawing-canvas" width="800" height="800"></canvas>
-      <div id="context-menu">
-        <ul></ul>
-      </div>
-    </main>
-
-    <!-- Right Sidebar: Score & Controls -->
-    <aside class="sidebar right-sidebar">
-      <!-- Scoreboard Panel -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Scoreboard</h2>
-          <button class="panel-toggle" aria-label="Toggle panel">−</button>
-        </div>
-        <div class="panel-content">
-          <div class="score-display">
-            <div class="score-item red-score">
-              <span class="score-label">Red</span>
-              <span class="score-value" id="red-score">0</span>
-            </div>
-            <div class="score-item blue-score">
-              <span class="score-label">Blue</span>
-              <span class="score-value" id="blue-score">0</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Team Numbers Panel -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Team Numbers</h2>
-          <button class="panel-toggle" aria-label="Toggle panel">−</button>
-        </div>
-        <div class="panel-content">
-          <div class="form-group">
-            <label for="red-team-1">Red Robot 1</label>
-            <input id="red-team-1" type="text" class="form-control" placeholder="Enter team number">
-          </div>
-          <div class="form-group">
-            <label for="red-team-2">Red Robot 2</label>
-            <input id="red-team-2" type="text" class="form-control" placeholder="Enter team number">
-          </div>
-          <div class="form-group">
-            <label for="blue-team-1">Blue Robot 1</label>
-            <input id="blue-team-1" type="text" class="form-control" placeholder="Enter team number">
-          </div>
-          <div class="form-group">
-            <label for="blue-team-2">Blue Robot 2</label>
-            <input id="blue-team-2" type="text" class="form-control" placeholder="Enter team number">
-          </div>
-        </div>
-      </div>
-
-      <!-- Ring Management Panel -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Ring Management</h2>
-          <button class="panel-toggle" aria-label="Toggle panel">−</button>
-        </div>
-        <div class="panel-content">
-          <div class="info-group">
-            <div class="info-item">
-              <span class="info-label">Selected:</span>
-              <span class="info-value" id="selected-object-info">None</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Rings:</span>
-              <span class="info-value" id="ring-count-info">0</span>
-              <span class="info-detail" id="ring-list-info">(None)</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <button id="add-red-ring" class="btn btn-danger btn-block" disabled>Add Red Ring</button>
-            <button id="add-blue-ring" class="btn btn-primary btn-block" disabled>Add Blue Ring</button>
-            <button id="remove-ring" class="btn btn-secondary btn-block" disabled>Remove Ring</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Controls Panel -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Controls</h2>
-          <button class="panel-toggle" aria-label="Toggle panel">−</button>
-        </div>
-        <div class="panel-content">
-          <div class="form-group">
-            <button id="reset-simulation-button" class="btn btn-warning btn-block">Reset Simulation</button>
-            <button id="show-tutorial" class="btn btn-secondary btn-block">Show Tutorial</button>
-          </div>
-          <div class="keyboard-shortcuts">
-            <h3>Keyboard Shortcuts</h3>
-            <ul>
-              <li><kbd>Ctrl+Z</kbd> Undo</li>
-              <li><kbd>Ctrl+Y</kbd> Redo</li>
-              <li><kbd>Scroll</kbd> Adjust heading</li>
-              <li><kbd>Ctrl+↑/↓</kbd> Move point order</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </aside>
   </div>
 
-  <!-- Point Info Panel (Floating) -->
-  <div id="pointInfo" class="floating-panel">
-    <div class="panel-header">
-      <h4>Point Info</h4>
-      <button id="closePointInfo" class="close-btn" aria-label="Close">×</button>
-    </div>
-    <div class="panel-content">
-      <div class="form-group">
-        <label for="pointXInput">X:</label>
-        <input id="pointXInput" type="number" step="0.1" class="form-control">
-      </div>
-      <div class="form-group">
-        <label for="pointYInput">Y:</label>
-        <input id="pointYInput" type="number" step="0.1" class="form-control">
-      </div>
-      <div class="form-group">
-        <label for="headingInput">Heading (°):</label>
-        <input id="headingInput" type="number" step="1" min="0" max="359" class="form-control">
-      </div>
-      <div class="form-group">
-        <p class="info-text"><strong>Point Index:</strong> <span id="pointIndexValue">N/A</span></p>
-      </div>
-      <div class="form-group">
-        <button id="insertPointBtn" class="btn btn-primary btn-block">Insert Midpoint</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Point List Panel (Floating) -->
-  <div id="pointListContainer" class="floating-panel">
-    <div class="panel-header">
-      <h3>Path Points</h3>
-      <button class="close-btn" id="closePointList" aria-label="Close">×</button>
-    </div>
-    <div class="panel-content">
-      <div id="pointList"></div>
-    </div>
-  </div>
-
-  <!-- Tutorial Modal -->
-  <div id="tutorial-modal" class="modal">
-    <div id="tutorial-content" class="modal-content">
-      <div class="modal-header">
-        <h2>Tutorial</h2>
-        <button id="close-tutorial" class="close-btn" aria-label="Close">×</button>
-      </div>
-      <div class="modal-body">
-        <p>Tutorial content will be displayed here.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scripts -->
   <script type="module" src="main.js"></script>
 </body>
 </html>
