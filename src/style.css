@@ -135,7 +135,7 @@ html, body {
 #logoIcon {
   width: 28px;
   height: 28px;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   object-fit: cover;
   border: 1px solid rgba(190,242,100,0.3);
   box-shadow: 0 0 10px var(--accent-glow);
