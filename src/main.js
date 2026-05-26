@@ -5,7 +5,7 @@ const RR_CANVAS_WIDTH = 800;
 const RR_CANVAS_HEIGHT = 800;
 const RR_VEX_MIN = -72;
 const RR_VEX_MAX = 72;
-const DEFAULT_FIELD_IMAGE = "../assets/fields/push-back-matches.png";
+const DEFAULT_FIELD_IMAGE = "../assets/fields/override-matches.png";
 
 // ============== Canvas Setup ===============
 const rrCanvas = document.getElementById("pathCanvas");

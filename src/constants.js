@@ -4,9 +4,11 @@ export const RR_CANVAS_WIDTH = 800;
 export const RR_CANVAS_HEIGHT = 800;
 export const RR_VEX_MIN = -72; // inches
 export const RR_VEX_MAX = 72;  // inches
-export const DEFAULT_FIELD_IMAGE = "../assets/fields/push-back-matches.png";
+export const DEFAULT_FIELD_IMAGE = "../assets/fields/override-matches.png";
 
 export const PRESET_FIELDS = [
+    { value: "../assets/fields/override-matches.png",     text: "Override — Match" },
+    { value: "../assets/fields/override-skills.png",      text: "Override — Skills" },
     { value: "../assets/fields/push-back-matches.png",   text: "Push Back — Match" },
     { value: "../assets/fields/push-back-skills.png",    text: "Push Back — Skills" },
     { value: "../assets/fields/high-stakes-matches.png", text: "High Stakes — Match" },
