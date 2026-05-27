@@ -217,7 +217,7 @@
       </div>
 
       <!-- Sketchpad -->
-      <div class="panel-card">
+      <div class="panel-card sketchpad-card">
         <div class="card-header">
           <div class="card-title-group">
             <span class="card-dot card-dot-muted"></span>
@@ -229,7 +229,16 @@
           <div class="sketch-controls">
             <div class="sketch-row-palette">
               <label>Brush Color</label>
-              <div id="drawing-color-palette" class="color-palette-grid"></div>
+              <div class="color-picker-dropdown" id="color-picker-dropdown">
+                <button class="color-picker-trigger" id="color-picker-trigger" type="button">
+                  <span class="color-preview-circle" id="selected-color-preview" style="background-color: #ffffff;"></span>
+                  <span id="selected-color-hex">#FFFFFF</span>
+                  <svg class="chevron-icon" width="10" height="6" viewBox="0 0 10 6" fill="none">
+                    <path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <div id="drawing-color-palette" class="color-palette-grid color-palette-dropdown-content"></div>
+              </div>
             </div>
             <div class="sketch-row" style="margin-top:10px;">
               <label>Brush Size</label>
@@ -242,14 +251,16 @@
             <div class="sketch-row">
               <label>Stamp</label>
               <select id="drawing-shape" class="top-select" style="flex:1;padding:6px 10px;font-size:11px;">
-                <option value="normal">Freehand</option>
+                <option value="normal" selected>Freehand</option>
+                <option value="select">Select / Move</option>
                 <option value="square">Rectangle</option>
                 <option value="arrow">Arrow</option>
               </select>
             </div>
           </div>
-          <div class="btn-row-2">
+          <div class="btn-row-3" style="margin-top:12px;">
             <button id="erase-tool" class="panel-btn">Eraser</button>
+            <button id="toggle-sketches-visibility" class="panel-btn">Hide Sketch</button>
             <button id="clear-drawing" class="panel-btn panel-btn-danger">Wipe</button>
           </div>
         </div>

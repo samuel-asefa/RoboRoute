@@ -496,6 +496,12 @@ html, body {
 
 .panel-card:hover { border-color: var(--border-default); }
 
+.sketchpad-card {
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+}
+
 .flex-card { flex: 1; min-height: 160px; }
 
 .card-header {
@@ -993,14 +999,84 @@ kbd {
   color: var(--text-secondary);
 }
 
+.color-picker-dropdown {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.color-picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: rgba(15, 18, 24, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: left;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.color-picker-trigger:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.color-preview-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.color-picker-trigger .chevron-icon {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.color-picker-dropdown.open .color-picker-trigger .chevron-icon {
+  transform: rotate(180deg);
+}
+
+.color-palette-dropdown-content {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 240px;
+  max-width: calc(100vw - 40px);
+  z-index: 100;
+  display: none;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  transform-origin: top left;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+
+.color-picker-dropdown.open .color-palette-dropdown-content {
+  display: grid;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
 .color-palette-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 4px;
-  background: rgba(15, 18, 24, 0.4);
+  background: #0e1017;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  padding: 6px;
+  padding: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
 }
 
 .color-swatch {

@@ -50,7 +50,16 @@ let drawingStartX = 0, drawingStartY = 0;
 let drawingCurrentX = 0, drawingCurrentY = 0;
 let drawingColor = '#ffffff';
 let drawingSize = 4;
-let drawingShape = 'normal';
+let drawingShape = 'normal'; // 'select' | 'normal' | 'square' | 'arrow'
+let sketchesVisible = true;
+
+// Vector drawing data
+let drawingObjects = [];
+let selectedDrawingObjectId = null;
+let dragMode = null; // null | 'move' | 'resize' | 'draw'
+let resizeHandleIndex = -1; // 0: TL, 1: TR, 2: BR, 3: BL
+let dragOffsetX = 0;
+let dragOffsetY = 0;
 
 // ============== DOM References ===============
 const rrPointInfoPanel = document.getElementById("point-editor-card");
@@ -103,8 +112,11 @@ function rrVexToCanvas(x, y) {
 }
 
 function rrCanvasToVex(x, y) {
-    const cx_unscaled = (x - rrOffsetX) / rrScale;
-    const cy_unscaled = (y - rrOffsetY) / rrScale;
+    const rect = rrCanvas.getBoundingClientRect();
+    const canvasX = x * (RR_CANVAS_WIDTH / rect.width);
+    const canvasY = y * (RR_CANVAS_HEIGHT / rect.height);
+    const cx_unscaled = (canvasX - rrOffsetX) / rrScale;
+    const cy_unscaled = (canvasY - rrOffsetY) / rrScale;
     const scaleX = (RR_VEX_MAX - RR_VEX_MIN) / RR_CANVAS_WIDTH;
     const scaleY = (RR_VEX_MAX - RR_VEX_MIN) / RR_CANVAS_HEIGHT;
     return {
@@ -371,7 +383,22 @@ function rrSetActiveMode(button) {
         rrPointCreationEnabled = true;
     }
 
-    if (button) button.classList.add('active-mode');
+    if (button) {
+        button.classList.add('active-mode');
+        // Auto-disable drawing mode when path planning mode is activated
+        if (drawingModeActive) {
+            drawingModeActive = false;
+            const toggleBtn = document.getElementById('toggle-drawing');
+            if (toggleBtn) {
+                toggleBtn.textContent = 'Enable Sketchpad';
+                toggleBtn.classList.remove('active-mode');
+            }
+            drawingCanvas.classList.remove('drawing-active');
+            isErasing = false;
+            document.getElementById('erase-tool')?.classList.remove('active-mode');
+            drawingCanvas.style.cursor = 'default';
+        }
+    }
 
     // Update top-bar mode label
     const modeLabel = document.getElementById('activeModeLabel');
@@ -506,76 +533,463 @@ function redrawCanvas() {
     }
 
     rrCtx.restore();
+    
+    // Sync-draw the vector drawings
+    redrawDrawingCanvas();
+
     requestAnimationFrame(redrawCanvas);
+}
+
+// ============== Sketchpad Geometry & Helpers ===============
+function getUnscaledCoords(e) {
+    const r = drawingCanvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) * (drawingCanvas.width / r.width);
+    const y = (e.clientY - r.top) * (drawingCanvas.height / r.height);
+    return {
+        x: (x - rrOffsetX) / rrScale,
+        y: (y - rrOffsetY) / rrScale
+    };
+}
+
+function getDistToSegment(px, py, x1, y1, x2, y2) {
+    const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+    if (l2 === 0) return Math.sqrt((px - x1) ** 2 + (py - y1) ** 2);
+    let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+    t = Math.max(0, Math.min(1, t));
+    return Math.sqrt((px - (x1 + t * (x2 - x1))) ** 2 + (py - (y1 + t * (y2 - y1))) ** 2);
+}
+
+function getFreehandBounds(points) {
+    if (points.length === 0) return { x1: 0, y1: 0, x2: 0, y2: 0 };
+    let x1 = points[0].x, y1 = points[0].y;
+    let x2 = points[0].x, y2 = points[0].y;
+    for (let p of points) {
+        if (p.x < x1) x1 = p.x;
+        if (p.y < y1) y1 = p.y;
+        if (p.x > x2) x2 = p.x;
+        if (p.y > y2) y2 = p.y;
+    }
+    return { x1, y1, x2, y2 };
+}
+
+function getHoveredHandleIndex(mx, my, obj) {
+    const minX = Math.min(obj.x1, obj.x2);
+    const minY = Math.min(obj.y1, obj.y2);
+    const maxX = Math.max(obj.x1, obj.x2);
+    const maxY = Math.max(obj.y1, obj.y2);
+    
+    const tol = 8 / rrScale;
+    const handles = [
+        { x: minX, y: minY }, // 0: Top-Left
+        { x: maxX, y: minY }, // 1: Top-Right
+        { x: maxX, y: maxY }, // 2: Bottom-Right
+        { x: minX, y: maxY }  // 3: Bottom-Left
+    ];
+    
+    for (let i = 0; i < handles.length; i++) {
+        const h = handles[i];
+        if (Math.abs(mx - h.x) <= tol && Math.abs(my - h.y) <= tol) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function getDrawingObjectAt(mx, my) {
+    const tol = 8 / rrScale;
+    for (let i = drawingObjects.length - 1; i >= 0; i--) {
+        const obj = drawingObjects[i];
+        if (obj.isVisible === false) continue;
+        
+        if (obj.type === 'square') {
+            const minX = Math.min(obj.x1, obj.x2);
+            const minY = Math.min(obj.y1, obj.y2);
+            const maxX = Math.max(obj.x1, obj.x2);
+            const maxY = Math.max(obj.y1, obj.y2);
+            if (mx >= minX - tol && mx <= maxX + tol && my >= minY - tol && my <= maxY + tol) {
+                return obj;
+            }
+        } else if (obj.type === 'arrow') {
+            const dist = getDistToSegment(mx, my, obj.x1, obj.y1, obj.x2, obj.y2);
+            if (dist <= tol) return obj;
+        } else if (obj.type === 'normal') {
+            for (let j = 0; j < obj.points.length - 1; j++) {
+                const dist = getDistToSegment(mx, my, obj.points[j].x, obj.points[j].y, obj.points[j+1].x, obj.points[j+1].y);
+                if (dist <= tol) return obj;
+            }
+            if (obj.points.length === 1) {
+                const dist = Math.sqrt((mx - obj.points[0].x)**2 + (my - obj.points[0].y)**2);
+                if (dist <= tol) return obj;
+            }
+        }
+    }
+    return null;
+}
+
+function drawSingleObject(ctx, obj) {
+    ctx.save();
+    ctx.strokeStyle = obj.color;
+    ctx.lineWidth = obj.size;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    if (obj.type === 'normal') {
+        if (obj.points.length < 2) {
+            if (obj.points.length === 1) {
+                ctx.beginPath();
+                ctx.arc(obj.points[0].x, obj.points[0].y, obj.size / 2, 0, 2 * Math.PI);
+                ctx.fillStyle = obj.color;
+                ctx.fill();
+            }
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(obj.points[0].x, obj.points[0].y);
+            for (let i = 1; i < obj.points.length; i++) {
+                ctx.lineTo(obj.points[i].x, obj.points[i].y);
+            }
+            ctx.stroke();
+        }
+    } else if (obj.type === 'square') {
+        const x = Math.min(obj.x1, obj.x2);
+        const y = Math.min(obj.y1, obj.y2);
+        const w = Math.abs(obj.x2 - obj.x1);
+        const h = Math.abs(obj.y2 - obj.y1);
+        ctx.strokeRect(x, y, w, h);
+    } else if (obj.type === 'arrow') {
+        ctx.beginPath();
+        ctx.moveTo(obj.x1, obj.y1);
+        ctx.lineTo(obj.x2, obj.y2);
+        ctx.stroke();
+        
+        const a = Math.atan2(obj.y2 - obj.y1, obj.x2 - obj.x1);
+        const hL = Math.max(8, obj.size * 3);
+        ctx.beginPath();
+        ctx.moveTo(obj.x2, obj.y2);
+        ctx.lineTo(obj.x2 - hL * Math.cos(a - Math.PI / 6), obj.y2 - hL * Math.sin(a - Math.PI / 6));
+        ctx.moveTo(obj.x2, obj.y2);
+        ctx.lineTo(obj.x2 - hL * Math.cos(a + Math.PI / 6), obj.y2 - hL * Math.sin(a + Math.PI / 6));
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function drawSelectionOutlineAndHandles(ctx, obj) {
+    const minX = Math.min(obj.x1, obj.x2);
+    const minY = Math.min(obj.y1, obj.y2);
+    const maxX = Math.max(obj.x1, obj.x2);
+    const maxY = Math.max(obj.y1, obj.y2);
+    const w = maxX - minX;
+    const h = maxY - minY;
+    
+    ctx.save();
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 1.5 / rrScale;
+    ctx.setLineDash([4 / rrScale, 4 / rrScale]);
+    ctx.strokeRect(minX, minY, w, h);
+    ctx.restore();
+    
+    const handleSize = 8 / rrScale;
+    ctx.save();
+    ctx.fillStyle = '#06b6d4';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5 / rrScale;
+    
+    const handles = [
+        { x: minX, y: minY },
+        { x: maxX, y: minY },
+        { x: maxX, y: maxY },
+        { x: minX, y: maxY }
+    ];
+    
+    handles.forEach(pos => {
+        ctx.fillRect(pos.x - handleSize/2, pos.y - handleSize/2, handleSize, handleSize);
+        ctx.strokeRect(pos.x - handleSize/2, pos.y - handleSize/2, handleSize, handleSize);
+    });
+    ctx.restore();
+}
+
+function redrawDrawingCanvas() {
+    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+    
+    if (!sketchesVisible) return;
+    
+    drawingCtx.save();
+    drawingCtx.translate(rrOffsetX, rrOffsetY);
+    drawingCtx.scale(rrScale, rrScale);
+    
+    drawingObjects.forEach(obj => {
+        if (obj.isVisible === false) return;
+        drawSingleObject(drawingCtx, obj);
+    });
+    
+    if (drawingShape === 'select' && selectedDrawingObjectId !== null) {
+        const selObj = drawingObjects.find(o => o.id === selectedDrawingObjectId);
+        if (selObj && selObj.isVisible !== false) {
+            drawSelectionOutlineAndHandles(drawingCtx, selObj);
+        }
+    }
+    
+    drawingCtx.restore();
+}
+
+function updateSelectCursor(mx, my) {
+    if (selectedDrawingObjectId !== null) {
+        const selObj = drawingObjects.find(o => o.id === selectedDrawingObjectId);
+        if (selObj) {
+            const handleIndex = getHoveredHandleIndex(mx, my, selObj);
+            if (handleIndex === 0 || handleIndex === 2) {
+                drawingCanvas.style.cursor = 'nwse-resize';
+                return;
+            } else if (handleIndex === 1 || handleIndex === 3) {
+                drawingCanvas.style.cursor = 'nesw-resize';
+                return;
+            }
+        }
+    }
+    
+    const hoveredObj = getDrawingObjectAt(mx, my);
+    if (hoveredObj) {
+        drawingCanvas.style.cursor = 'move';
+    } else {
+        drawingCanvas.style.cursor = 'default';
+    }
+}
+
+function eraseAt(mx, my) {
+    const eraserSize = Math.max(12, drawingSize * 2.5) / rrScale;
+    
+    drawingObjects = drawingObjects.filter(obj => {
+        if (obj.isVisible === false) return true;
+        
+        if (obj.type === 'square') {
+            const minX = Math.min(obj.x1, obj.x2);
+            const minY = Math.min(obj.y1, obj.y2);
+            const maxX = Math.max(obj.x1, obj.x2);
+            const maxY = Math.max(obj.y1, obj.y2);
+            
+            const dist1 = getDistToSegment(mx, my, minX, minY, maxX, minY);
+            const dist2 = getDistToSegment(mx, my, maxX, minY, maxX, maxY);
+            const dist3 = getDistToSegment(mx, my, maxX, maxY, minX, maxY);
+            const dist4 = getDistToSegment(mx, my, minX, maxY, minX, minY);
+            
+            const minDist = Math.min(dist1, dist2, dist3, dist4);
+            return minDist > eraserSize;
+        } else if (obj.type === 'arrow') {
+            const dist = getDistToSegment(mx, my, obj.x1, obj.y1, obj.x2, obj.y2);
+            return dist > eraserSize;
+        } else if (obj.type === 'normal') {
+            for (let j = 0; j < obj.points.length - 1; j++) {
+                const dist = getDistToSegment(mx, my, obj.points[j].x, obj.points[j].y, obj.points[j+1].x, obj.points[j+1].y);
+                if (dist <= eraserSize) return false;
+            }
+            if (obj.points.length === 1) {
+                const dist = Math.sqrt((mx - obj.points[0].x)**2 + (my - obj.points[0].y)**2);
+                if (dist <= eraserSize) return false;
+            }
+            return true;
+        }
+        return true;
+    });
 }
 
 // ============== Sketchpad Handlers ===============
 function handleDrawingMouseDown(e) {
     if (!drawingModeActive) return;
-    const r = drawingCanvas.getBoundingClientRect();
-    drawingStartX = e.clientX - r.left;
-    drawingStartY = e.clientY - r.top;
-    drawingCurrentX = drawingStartX;
-    drawingCurrentY = drawingStartY;
-    isDrawing = true;
-    drawingCtx.lineCap = 'round';
-    drawingCtx.lineJoin = 'round';
-    drawingCtx.strokeStyle = drawingColor;
-    drawingCtx.lineWidth = drawingSize;
-    if (isErasing) {
-        drawingCtx.globalCompositeOperation = 'destination-out';
-        drawingCtx.lineWidth = Math.max(12, drawingSize * 2);
-    } else {
-        drawingCtx.globalCompositeOperation = 'source-over';
+    
+    const { x: mx, y: my } = getUnscaledCoords(e);
+    
+    // Auto-reveal sketches if hidden
+    if (!sketchesVisible) {
+        sketchesVisible = true;
+        const visibilityBtn = document.getElementById('toggle-sketches-visibility');
+        if (visibilityBtn) visibilityBtn.textContent = 'Hide Sketch';
+        drawingCanvas.style.opacity = '1';
     }
-    if (drawingShape === 'normal' || isErasing) {
-        drawingCtx.beginPath();
-        drawingCtx.moveTo(drawingStartX, drawingStartY);
+    
+    if (isErasing) {
+        isDrawing = true;
+        eraseAt(mx, my);
+        return;
+    }
+    
+    if (drawingShape === 'select') {
+        if (selectedDrawingObjectId !== null) {
+            const selObj = drawingObjects.find(o => o.id === selectedDrawingObjectId);
+            if (selObj) {
+                const handleIndex = getHoveredHandleIndex(mx, my, selObj);
+                if (handleIndex !== -1) {
+                    dragMode = 'resize';
+                    resizeHandleIndex = handleIndex;
+                    isDrawing = true;
+                    selObj.originalBounds = { x1: selObj.x1, y1: selObj.y1, x2: selObj.x2, y2: selObj.y2 };
+                    if (selObj.type === 'normal') {
+                        selObj.originalPoints = selObj.points.map(p => ({ x: p.x, y: p.y }));
+                    }
+                    dragStartX = mx;
+                    dragStartY = my;
+                    return;
+                }
+            }
+        }
+        
+        const clickedObj = getDrawingObjectAt(mx, my);
+        if (clickedObj) {
+            selectedDrawingObjectId = clickedObj.id;
+            dragMode = 'move';
+            isDrawing = true;
+            clickedObj.originalBounds = { x1: clickedObj.x1, y1: clickedObj.y1, x2: clickedObj.x2, y2: clickedObj.y2 };
+            if (clickedObj.type === 'normal') {
+                clickedObj.originalPoints = clickedObj.points.map(p => ({ x: p.x, y: p.y }));
+            }
+            dragStartX = mx;
+            dragStartY = my;
+        } else {
+            selectedDrawingObjectId = null;
+            dragMode = null;
+        }
+    } else {
+        isDrawing = true;
+        dragMode = 'draw';
+        dragStartX = mx;
+        dragStartY = my;
+        
+        if (drawingShape === 'normal') {
+            const newObj = {
+                id: Date.now(),
+                type: 'normal',
+                points: [{ x: mx, y: my }],
+                color: drawingColor,
+                size: drawingSize,
+                isVisible: true
+            };
+            drawingObjects.push(newObj);
+            selectedDrawingObjectId = newObj.id;
+        } else if (drawingShape === 'square' || drawingShape === 'arrow') {
+            const newObj = {
+                id: Date.now(),
+                type: drawingShape,
+                x1: mx,
+                y1: my,
+                x2: mx,
+                y2: my,
+                color: drawingColor,
+                size: drawingSize,
+                isVisible: true
+            };
+            drawingObjects.push(newObj);
+            selectedDrawingObjectId = newObj.id;
+        }
     }
 }
 
 function handleDrawingMouseMove(e) {
-    if (!drawingModeActive || !isDrawing) return;
-    const r = drawingCanvas.getBoundingClientRect();
-    drawingCurrentX = e.clientX - r.left;
-    drawingCurrentY = e.clientY - r.top;
-    if (drawingShape === 'normal' || isErasing) {
-        drawingCtx.lineTo(drawingCurrentX, drawingCurrentY);
-        drawingCtx.stroke();
-        drawingCtx.beginPath();
-        drawingCtx.moveTo(drawingCurrentX, drawingCurrentY);
+    if (!drawingModeActive) return;
+    
+    const { x: mx, y: my } = getUnscaledCoords(e);
+    
+    if (isDrawing && isErasing) {
+        eraseAt(mx, my);
+        return;
+    }
+    
+    if (!isDrawing) {
+        if (drawingShape === 'select') {
+            updateSelectCursor(mx, my);
+        } else {
+            drawingCanvas.style.cursor = 'cell';
+        }
+        return;
+    }
+    
+    if (dragMode === 'draw') {
+        const activeObj = drawingObjects.find(o => o.id === selectedDrawingObjectId);
+        if (activeObj) {
+            if (activeObj.type === 'normal') {
+                activeObj.points.push({ x: mx, y: my });
+            } else {
+                activeObj.x2 = mx;
+                activeObj.y2 = my;
+            }
+        }
+    } else if (dragMode === 'move') {
+        const activeObj = drawingObjects.find(o => o.id === selectedDrawingObjectId);
+        if (activeObj) {
+            const dx = mx - dragStartX;
+            const dy = my - dragStartY;
+            activeObj.x1 = activeObj.originalBounds.x1 + dx;
+            activeObj.y1 = activeObj.originalBounds.y1 + dy;
+            activeObj.x2 = activeObj.originalBounds.x2 + dx;
+            activeObj.y2 = activeObj.originalBounds.y2 + dy;
+            
+            if (activeObj.type === 'normal') {
+                for (let i = 0; i < activeObj.points.length; i++) {
+                    activeObj.points[i].x = activeObj.originalPoints[i].x + dx;
+                    activeObj.points[i].y = activeObj.originalPoints[i].y + dy;
+                }
+            }
+        }
+    } else if (dragMode === 'resize') {
+        const activeObj = drawingObjects.find(o => o.id === selectedDrawingObjectId);
+        if (activeObj) {
+            const dx = mx - dragStartX;
+            const dy = my - dragStartY;
+            
+            if (resizeHandleIndex === 0) {
+                activeObj.x1 = activeObj.originalBounds.x1 + dx;
+                activeObj.y1 = activeObj.originalBounds.y1 + dy;
+            } else if (resizeHandleIndex === 1) {
+                activeObj.x2 = activeObj.originalBounds.x2 + dx;
+                activeObj.y1 = activeObj.originalBounds.y1 + dy;
+            } else if (resizeHandleIndex === 2) {
+                activeObj.x2 = activeObj.originalBounds.x2 + dx;
+                activeObj.y2 = activeObj.originalBounds.y2 + dy;
+            } else if (resizeHandleIndex === 3) {
+                activeObj.x1 = activeObj.originalBounds.x1 + dx;
+                activeObj.y2 = activeObj.originalBounds.y2 + dy;
+            }
+            
+            if (activeObj.type === 'normal') {
+                const origW = activeObj.originalBounds.x2 - activeObj.originalBounds.x1;
+                const origH = activeObj.originalBounds.y2 - activeObj.originalBounds.y1;
+                const newW = activeObj.x2 - activeObj.x1;
+                const newH = activeObj.y2 - activeObj.y1;
+                
+                for (let i = 0; i < activeObj.points.length; i++) {
+                    const p = activeObj.originalPoints[i];
+                    const pctX = origW === 0 ? 0.5 : (p.x - activeObj.originalBounds.x1) / origW;
+                    const pctY = origH === 0 ? 0.5 : (p.y - activeObj.originalBounds.y1) / origH;
+                    activeObj.points[i].x = activeObj.x1 + pctX * newW;
+                    activeObj.points[i].y = activeObj.y1 + pctY * newH;
+                }
+            }
+        }
     }
 }
 
 function handleDrawingMouseUp(e) {
     if (!drawingModeActive || !isDrawing) return;
-    const r = drawingCanvas.getBoundingClientRect();
-    drawingCurrentX = e.clientX - r.left;
-    drawingCurrentY = e.clientY - r.top;
-    if (isErasing) {
-        drawingCtx.lineTo(drawingCurrentX, drawingCurrentY);
-        drawingCtx.stroke();
-    } else if (drawingShape === 'square') {
-        drawingCtx.strokeRect(drawingStartX, drawingStartY, drawingCurrentX - drawingStartX, drawingCurrentY - drawingStartY);
-    } else if (drawingShape === 'arrow') {
-        drawingCtx.beginPath();
-        drawingCtx.moveTo(drawingStartX, drawingStartY);
-        drawingCtx.lineTo(drawingCurrentX, drawingCurrentY);
-        drawingCtx.stroke();
-        const a = Math.atan2(drawingCurrentY - drawingStartY, drawingCurrentX - drawingStartX);
-        const hL = drawingSize * 3;
-        drawingCtx.beginPath();
-        drawingCtx.moveTo(drawingCurrentX, drawingCurrentY);
-        drawingCtx.lineTo(drawingCurrentX - hL * Math.cos(a - Math.PI / 6), drawingCurrentY - hL * Math.sin(a - Math.PI / 6));
-        drawingCtx.moveTo(drawingCurrentX, drawingCurrentY);
-        drawingCtx.lineTo(drawingCurrentX - hL * Math.cos(a + Math.PI / 6), drawingCurrentY - hL * Math.sin(a + Math.PI / 6));
-        drawingCtx.stroke();
-    } else if (drawingShape === 'normal') {
-        drawingCtx.lineTo(drawingCurrentX, drawingCurrentY);
-        drawingCtx.stroke();
+    
+    const { x: mx, y: my } = getUnscaledCoords(e);
+    
+    if (dragMode === 'draw') {
+        const activeObj = drawingObjects.find(o => o.id === selectedDrawingObjectId);
+        if (activeObj) {
+            if (activeObj.type === 'normal') {
+                activeObj.points.push({ x: mx, y: my });
+                const bounds = getFreehandBounds(activeObj.points);
+                activeObj.x1 = bounds.x1;
+                activeObj.y1 = bounds.y1;
+                activeObj.x2 = bounds.x2;
+                activeObj.y2 = bounds.y2;
+            } else {
+                activeObj.x2 = mx;
+                activeObj.y2 = my;
+            }
+        }
     }
+    
     isDrawing = false;
-    drawingCtx.globalCompositeOperation = 'source-over';
+    dragMode = null;
 }
 
 // ============== Event Listeners ===============
@@ -830,10 +1244,30 @@ function setupEventListeners() {
         drawingCanvas.classList.toggle('drawing-active', drawingModeActive);
         if (!drawingModeActive) {
             isErasing = false;
+            document.getElementById('erase-tool')?.classList.remove('active-mode');
             drawingCtx.globalCompositeOperation = 'source-over';
             rrCanvas.style.cursor = 'crosshair';
         } else {
+            // Unselect all path planning tools!
+            rrSetActiveMode(null);
             rrCanvas.style.cursor = 'default';
+        }
+    });
+
+    // Color picker dropdown setup
+    const colorDropdown = document.getElementById('color-picker-dropdown');
+    const colorTrigger = document.getElementById('color-picker-trigger');
+    const colorPreview = document.getElementById('selected-color-preview');
+    const colorHexLabel = document.getElementById('selected-color-hex');
+    
+    colorTrigger?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        colorDropdown?.classList.toggle('open');
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (colorDropdown && !colorDropdown.contains(e.target)) {
+            colorDropdown.classList.remove('open');
         }
     });
 
@@ -868,13 +1302,22 @@ function setupEventListeners() {
             if (color === '#ffffff') {
                 swatch.classList.add('selected');
                 drawingColor = '#ffffff';
+                if (colorPreview) colorPreview.style.backgroundColor = '#ffffff';
+                if (colorHexLabel) colorHexLabel.textContent = '#FFFFFF';
             }
 
-            swatch.addEventListener('click', () => {
+            swatch.addEventListener('click', (e) => {
+                e.stopPropagation();
                 paletteContainer.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
                 swatch.classList.add('selected');
                 drawingColor = color;
                 isErasing = false;
+                document.getElementById('erase-tool')?.classList.remove('active-mode');
+                
+                if (colorPreview) colorPreview.style.backgroundColor = color;
+                if (colorHexLabel) colorHexLabel.textContent = color.toUpperCase();
+                
+                colorDropdown?.classList.remove('open');
             });
             paletteContainer.appendChild(swatch);
         });
@@ -967,14 +1410,38 @@ function setupEventListeners() {
     });
     brushSizeInput?.addEventListener('blur', applyBrushSizeInput);
 
-    document.getElementById('drawing-shape')?.addEventListener('change', (e) => { drawingShape = e.target.value; });
-
-    document.getElementById('erase-tool')?.addEventListener('click', () => {
-        if (!drawingModeActive) document.getElementById('toggle-drawing')?.click();
-        isErasing = true;
+    document.getElementById('drawing-shape')?.addEventListener('change', (e) => {
+        drawingShape = e.target.value;
+        isErasing = false;
+        document.getElementById('erase-tool')?.classList.remove('active-mode');
+        selectedDrawingObjectId = null;
     });
+
+    document.getElementById('erase-tool')?.addEventListener('click', function () {
+        if (!drawingModeActive) document.getElementById('toggle-drawing')?.click();
+        isErasing = !isErasing;
+        this.classList.toggle('active-mode', isErasing);
+        if (isErasing) {
+            selectedDrawingObjectId = null;
+        }
+    });
+
+    // Visibility toggle
+    const visibilityBtn = document.getElementById('toggle-sketches-visibility');
+    visibilityBtn?.addEventListener('click', function () {
+        sketchesVisible = !sketchesVisible;
+        this.textContent = sketchesVisible ? 'Hide Sketch' : 'Show Sketch';
+        this.classList.toggle('active-mode', !sketchesVisible);
+        drawingCanvas.style.opacity = sketchesVisible ? '1' : '0';
+        drawingCanvas.style.pointerEvents = (drawingModeActive && sketchesVisible) ? 'auto' : 'none';
+    });
+
     document.getElementById('clear-drawing')?.addEventListener('click', () => {
-        drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        if (drawingObjects.length === 0) return;
+        if (confirm('Wipe all sketches?')) {
+            drawingObjects = [];
+            selectedDrawingObjectId = null;
+        }
     });
 
     // Keyboard shortcuts
@@ -984,9 +1451,14 @@ function setupEventListeners() {
             else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); rrRedo(); }
         }
         if (e.key === 'Delete' || e.key === 'Backspace') {
-            if (rrSelectedPointIndex !== null && !e.ctrlKey && !e.metaKey) {
-                const active = document.activeElement;
-                if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+            const active = document.activeElement;
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+            
+            if (drawingModeActive && drawingShape === 'select' && selectedDrawingObjectId !== null) {
+                e.preventDefault();
+                drawingObjects = drawingObjects.filter(o => o.id !== selectedDrawingObjectId);
+                selectedDrawingObjectId = null;
+            } else if (rrSelectedPointIndex !== null && !e.ctrlKey && !e.metaKey) {
                 e.preventDefault();
                 rrSaveState();
                 rrPoints.splice(rrSelectedPointIndex, 1);
